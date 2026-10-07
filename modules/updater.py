@@ -1,5 +1,5 @@
-#  Dragon-Userbot - telegram userbot
-#  Copyright (C) 2020-present Dragon Userbot Organization
+#  Nexus-Userbot - telegram userbot
+#  Copyright (C) 2020-present Nexus Userbot Organization
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@ from pyrogram.types import Message
 
 from utils.db import db
 from utils.misc import modules_help, prefix, requirements_list
-from utils.scripts import format_exc, restart
+from utils.scripts import handle_errors, restart
 
 
 @Client.on_message(filters.command("restart", prefix) & filters.me)
@@ -39,11 +39,11 @@ async def restart_cmd(_, message: Message):
     )
 
     if "LAVHOST" in os.environ:
-        await message.edit("<b>Your lavHost is restarting...</b>")
+        await message.edit("<b>Ваш lavHost перезапускается...</b>")
         os.system("lavhost restart")
         return
 
-    await message.edit("<b>Restarting...</b>")
+    await message.edit("<b>Перезапуск...</b>")
     restart()
 
 
@@ -60,11 +60,11 @@ async def update(_, message: Message):
     )
 
     if "LAVHOST" in os.environ:
-        await message.edit("<b>Your lavHost is updating...</b>")
+        await message.edit("<b>Ваш lavHost обновляется...</b>")
         os.system("lavhost update")
         return
 
-    await message.edit("<b>Updating...</b>")
+    await message.edit("<b>Обновление...</b>")
     try:
         subprocess.run([sys.executable, "-m", "pip", "install", "-U", "pip"])
         subprocess.run(["git", "pull"])
@@ -82,15 +82,15 @@ async def update(_, message: Message):
         subprocess.run(
             [sys.executable, "-m", "pip", "install", "-U", *requirements_list]
         )
-    except Exception as e:
-        await message.edit(format_exc(e))
+    except Exception:
         db.remove("core.updater", "restart_info")
+        await message.edit("<b>Обновление не удалось</b>")
     else:
-        await message.edit("<b>Restarting...</b>")
+        await message.edit("<b>Перезапуск...</b>")
         restart()
 
 
 modules_help["updater"] = {
-    "update": "Update the userbot. If new core modules are avaliable, they will be installed",
-    "restart": "Restart userbot",
+    "update": "Обновляет userbot. Если доступны новые модули ядра, они будут установлены",
+    "restart": "Перезапускает userbot",
 }

@@ -1,5 +1,5 @@
-#  Dragon-Userbot - telegram userbot
-#  Copyright (C) 2020-present Dragon Userbot Organization
+#  Nexus-Userbot - telegram userbot
+#  Copyright (C) 2020-present Nexus Userbot Organization
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -14,7 +14,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-# TODO: Add ability to kill session by hash
+# TODO: Добавить возможность завершать сессию по хэшу
 
 import time
 from datetime import datetime
@@ -35,33 +35,42 @@ auth_hashes = db.get("core.sessionkiller", "auths_hashes", [])
 
 @Client.on_message(filters.command(["sessions"], prefix) & filters.me)
 async def sessions_list(client: Client, message: Message):
+    """Показывает список активных сессий аккаунта.
+
+    Args:
+        client: Клиент Pyrogram.
+        message: Сообщение, вызвавшее команду.
+
+    Returns:
+        None: Список сессий отправляется ответами, команда удаляется.
+    """
     formatted_sessions = []
     sessions = (await client.invoke(GetAuthorizations())).authorizations
     for num, session in enumerate(sessions, 1):
         formatted_sessions.append(
             (
-                "<b>{num}</b>. <b>{model}</b> on <code>{platform}</code>\n"
-                "<b>Hash:</b> {hash}\n"
-                "<b>App name:</b> <code>{app_name}</code> v.{version}\n"
-                "<b>Created (last activity):</b> {created} ({last_activity})\n"
-                "<b>IP and location: </b>: <code>{ip}</code> (<i>{location}</i>)\n"
-                "<b>Official status:</b> <code>{official}</code>\n"
-                "<b>2FA accepted:</b> <code>{password_pending}</code>\n"
-                "<b>Can accept calls / secret chats:</b> {calls} / {secret_chats}"
+                "<b>{num}</b>. <b>{model}</b> на <code>{platform}</code>\n"
+                "<b>Хэш:</b> {hash}\n"
+                "<b>Имя приложения:</b> <code>{app_name}</code> v.{version}\n"
+                "<b>Создана (последняя активность):</b> {created} ({last_activity})\n"
+                "<b>IP и локация:</b> <code>{ip}</code> (<i>{location}</i>)\n"
+                "<b>Официальное приложение:</b> <code>{official}</code>\n"
+                "<b>2FA принят:</b> <code>{password_pending}</code>\n"
+                "<b>Может принимать звонки / секретные чаты:</b> {calls} / {secret_chats}"
             ).format(
                 num=num,
                 model=escape(session.device_model),
                 platform=escape(
                     session.platform
                     if session.platform != ""
-                    else "unknown platform"
+                    else "неизвестная платформа"
                 ),
                 hash=session.hash,
                 app_name=escape(session.app_name),
                 version=escape(
                     session.app_version
                     if session.app_version != ""
-                    else "unknown"
+                    else "неизвестно"
                 ),
                 created=datetime.fromtimestamp(
                     session.date_created
@@ -71,15 +80,15 @@ async def sessions_list(client: Client, message: Message):
                 ).isoformat(),
                 ip=session.ip,
                 location=session.country,
-                official="✅" if session.official_app else "❌️",
-                password_pending="❌️️" if session.password_pending else "✅",
-                calls="❌️️" if session.call_requests_disabled else "✅",
+                official="✅" if session.official_app else "❌",
+                password_pending="❌" if session.password_pending else "✅",
+                calls="❌" if session.call_requests_disabled else "✅",
                 secret_chats=(
-                    "❌️️" if session.encrypted_requests_disabled else "✅"
+                    "❌" if session.encrypted_requests_disabled else "✅"
                 ),
             )
         )
-    answer = "<b>Active sessions at your account:</b>\n\n"
+    answer = "<b>Активные сессии вашего аккаунта:</b>\n\n"
     chunk = []
     for s in formatted_sessions:
         chunk.append(s)
@@ -97,20 +106,29 @@ async def sessions_list(client: Client, message: Message):
     filters.command(["sessionkiller", "sk"], prefix) & filters.me
 )
 async def sessionkiller(client: Client, message: Message):
+    """Включает/выключает автоматическое завершение новых сессий.
+
+    Args:
+        client: Клиент Pyrogram.
+        message: Сообщение, вызвавшее команду.
+
+    Returns:
+        None: Статус выводится через редактирование сообщения.
+    """
     if len(message.command) == 1:
         if db.get("core.sessionkiller", "enabled", False):
             await message.edit(
-                "<b>Sessionkiller status: enabled\n"
-                f"You can disable it with <code>{prefix}sessionkiller disable</code></b>"
+                "<b>Статус sessionkiller: включён\n"
+                f"Отключить: <code>{prefix}sessionkiller disable</code></b>"
             )
         else:
             await message.edit(
-                "<b>Sessionkiller status: disabled\n"
-                f"You can enable it with <code>{prefix}sessionkiller enable</code></b>"
+                "<b>Статус sessionkiller: выключен\n"
+                f"Включить: <code>{prefix}sessionkiller enable</code></b>"
             )
     elif message.command[1] in ["enable", "on", "1", "yes", "true"]:
         db.set("core.sessionkiller", "enabled", True)
-        await message.edit("<b>Sessionkiller enabled!</b>")
+        await message.edit("<b>Sessionkiller включён!</b>")
         db.set(
             "core.sessionkiller",
             "auths_hashes",
@@ -124,10 +142,10 @@ async def sessionkiller(client: Client, message: Message):
 
     elif message.command[1] in ["disable", "off", "0", "no", "false"]:
         db.set("core.sessionkiller", "enabled", False)
-        await message.edit("<b>Sessionkiller disabled!</b>")
+        await message.edit("<b>Sessionkiller выключен!</b>")
     else:
         await message.edit(
-            f"<b>Usage: {prefix}sessionkiller [enable|disable]</b>"
+            f"<b>Использование: {prefix}sessionkiller [enable|disable]</b>"
         )
 
 
@@ -135,6 +153,17 @@ async def sessionkiller(client: Client, message: Message):
 async def check_new_login(
     client: Client, update: UpdateServiceNotification, _, __
 ):
+    """Проверяет новые входы в аккаунт и завершает их при включённом sessionkiller.
+
+    Args:
+        client: Клиент Pyrogram.
+        update: Сырой апдейт от Telegram.
+        _: Не используется.
+        __: Не используется.
+
+    Returns:
+        None: Подозрительная сессия завершается, отчёт отправляется в избранное.
+    """
     if not isinstance(
         update, UpdateServiceNotification
     ) or not update.type.startswith("auth"):
@@ -148,43 +177,43 @@ async def check_new_login(
         if auth.current:
             continue
         if auth["hash"] not in auth_hashes:
-            # found new unexpected login
+            # обнаружен новый неожиданный вход
             try:
                 await client.invoke(ResetAuthorization(hash=auth.hash))
             except RPCError:
                 info_text = (
-                    "Someone tried to log in to your account. You can see this report because you"
-                    "turned on this feature. But I couldn't terminate attacker's session and "
-                    "⚠ <b>you must reset it manually</b>. You should change your 2FA password "
-                    "(if enabled), or set it.\n"
+                    "Кто-то пытался войти в ваш аккаунт. Вы видите этот отчёт, потому что включили эту функцию. "
+                    "Но я не смог завершить сессию атакующего и "
+                    "⚠ <b>вы должны сбросить её вручную</b>. Смените пароль 2FA "
+                    "(если включено), или установите его.\n"
                 )
             else:
                 info_text = (
-                    "Someone tried to log in to your account. Since you have enabled "
-                    "this feature, I deleted the attacker's session from your account. "
-                    "You should change your 2FA password (if enabled), or set it.\n"
+                    "Кто-то пытался войти в ваш аккаунт. Так как функция включена, "
+                    "я удалил сессию атакующего из вашего аккаунта. "
+                    "Смените пароль 2FA (если включено), или установите его.\n"
                 )
             logined_time = datetime.utcfromtimestamp(
                 auth.date_created
             ).strftime("%d-%m-%Y %H-%M-%S UTC")
             full_report = (
-                "<b>!!! ACTION REQUIRED !!!</b>\n"
+                "<b>!!! ТРЕБУЕТСЯ ДЕЙСТВИЕ !!!</b>\n"
                 + info_text
-                + "Below is the information about the attacker that I got.\n\n"
-                f"Unique authorization hash: <code>{auth.hash}</code> (not valid anymore)\n"
-                f"Device model: <code>{escape(auth.device_model)}</code>\n"
-                f"Platform: <code>{escape(auth.platform)}</code>\n"
+                + "Ниже информация об атакующем, которую мне удалось получить.\n\n"
+                f"Уникальный хэш авторизации: <code>{auth.hash}</code> (больше недействителен)\n"
+                f"Модель устройства: <code>{escape(auth.device_model)}</code>\n"
+                f"Платформа: <code>{escape(auth.platform)}</code>\n"
                 f"API ID: <code>{auth.api_id}</code>\n"
-                f"App name: <code>{escape(auth.app_name)}</code>\n"
-                f"App version: <code>{auth.app_version}</code>\n"
-                f"Logined at: <code>{logined_time}</code>\n"
+                f"Имя приложения: <code>{escape(auth.app_name)}</code>\n"
+                f"Версия приложения: <code>{auth.app_version}</code>\n"
+                f"Вход выполнен: <code>{logined_time}</code>\n"
                 f"IP: <code>{auth.ip}</code>\n"
-                f"Country: <code>{auth.country}</code>\n"
-                f'Official app: <b>{"yes" if auth.official_app else "no"}</b>\n\n'
-                f"<b>It is you? Type <code>{prefix}sk off</code> and try logging "
-                f"in again.</b>"
+                f"Страна: <code>{auth.country}</code>\n"
+                f'Официальное приложение: <b>{"да" if auth.official_app else "нет"}</b>\n\n'
+                f"<b>Это вы? Введите <code>{prefix}sk off</code> и попробуйте "
+                f"войти снова.</b>"
             )
-            # schedule sending report message so user will get notification
+            # планируем отправку отчёта, чтобы пользователь получил уведомление
             schedule_date = int(time.time() + 15)
             await client.send_message(
                 "me", full_report, schedule_date=schedule_date
@@ -193,7 +222,7 @@ async def check_new_login(
 
 
 modules_help["sessions"] = {
-    "sessionkiller [enable|disable]": "When enabled, every new session will be terminated.\n"
-    "Useful for additional protection for your account",
-    "sessions": "List all sessions on your account",
+    "sessionkiller [enable|disable]": "При включении каждая новая сессия будет завершена.\n"
+    "Полезно для дополнительной защиты аккаунта",
+    "sessions": "Показать все сессии аккаунта",
 }

@@ -9,7 +9,7 @@ from pyrogram.types import (
 
 from utils.db import db
 from utils.misc import modules_help, prefix
-from utils.scripts import format_exc
+from utils.scripts import handle_errors
 
 
 def get_filters_chat(chat_id):
@@ -122,139 +122,130 @@ async def filters_main_handler(client: Client, message: Message):
 
 
 @Client.on_message(filters.command(["filter"], prefix) & filters.me)
+@handle_errors
 async def filter_handler(client: Client, message: Message):
-    try:
-        if len(message.text.split()) < 2:
-            return await message.edit(
-                f"<b>Usage</b>: <code>{prefix}filter [name] (Reply required)</code>"
-            )
-        name = message.text.split(maxsplit=1)[1].lower()
-        chat_filters = get_filters_chat(message.chat.id)
-        if name in chat_filters.keys():
-            return await message.edit(
-                f"<b>Filter</b> <code>{name}</code> already exists."
-            )
-        if not message.reply_to_message:
-            return await message.edit("<b>Reply to message</b> please.")
-
-        try:
-            chat = await client.get_chat(db.get("core.notes", "chat_id", 0))
-        except (errors.RPCError, ValueError, KeyError):
-            # group is not accessible or isn't created
-            chat = await client.create_supergroup(
-                "Dragon_Userbot_Notes_Filters", "Don't touch this group, please"
-            )
-            db.set("core.notes", "chat_id", chat.id)
-
-        chat_id = chat.id
-
-        if message.reply_to_message.media_group_id:
-            get_media_group = [
-                _.id
-                for _ in await client.get_media_group(
-                    message.chat.id, message.reply_to_message.id
-                )
-            ]
-            try:
-                message_id = await client.forward_messages(
-                    chat_id, message.chat.id, get_media_group
-                )
-            except errors.ChatForwardsRestricted:
-                await message.edit(
-                    "<b>Forwarding messages is restricted by chat admins</b>"
-                )
-                return
-            filter_ = {
-                "MESSAGE_ID": str(message_id[1].id),
-                "MEDIA_GROUP": True,
-                "CHAT_ID": str(chat_id),
-            }
-        else:
-            try:
-                message_id = await message.reply_to_message.forward(chat_id)
-            except errors.ChatForwardsRestricted:
-                message_id = await message.copy(chat_id)
-            filter_ = {
-                "MEDIA_GROUP": False,
-                "MESSAGE_ID": str(message_id.id),
-                "CHAT_ID": str(chat_id),
-            }
-
-        chat_filters.update({name: filter_})
-
-        set_filters_chat(message.chat.id, chat_filters)
+    if len(message.text.split()) < 2:
         return await message.edit(
-            f"<b>Filter</b> <code>{name}</code> has been added."
+            f"<b>Использование</b>: <code>{prefix}filter [name] (нужен ответ)</code>"
         )
-    except Exception as e:
-        return await message.edit(format_exc(e))
+    name = message.text.split(maxsplit=1)[1].lower()
+    chat_filters = get_filters_chat(message.chat.id)
+    if name in chat_filters.keys():
+        return await message.edit(
+            f"<b>Фильтр</b> <code>{name}</code> уже существует."
+        )
+    if not message.reply_to_message:
+        return await message.edit("<b>Ответьте на сообщение</b>, пожалуйста.")
+
+    try:
+        chat = await client.get_chat(db.get("core.notes", "chat_id", 0))
+    except (errors.RPCError, ValueError, KeyError):
+        chat = await client.create_supergroup(
+            "Nexus_Userbot_Notes_Filters", "Не трогайте эту группу, пожалуйста"
+        )
+        db.set("core.notes", "chat_id", chat.id)
+
+    chat_id = chat.id
+
+    if message.reply_to_message.media_group_id:
+        get_media_group = [
+            _.id
+            for _ in await client.get_media_group(
+                message.chat.id, message.reply_to_message.id
+            )
+        ]
+        try:
+            message_id = await client.forward_messages(
+                chat_id, message.chat.id, get_media_group
+            )
+        except errors.ChatForwardsRestricted:
+            await message.edit(
+                "<b>Пересылка сообщений ограничена администраторами чата</b>"
+            )
+            return
+        filter_ = {
+            "MESSAGE_ID": str(message_id[1].id),
+            "MEDIA_GROUP": True,
+            "CHAT_ID": str(chat_id),
+        }
+    else:
+        try:
+            message_id = await message.reply_to_message.forward(chat_id)
+        except errors.ChatForwardsRestricted:
+            message_id = await message.copy(chat_id)
+        filter_ = {
+            "MEDIA_GROUP": False,
+            "MESSAGE_ID": str(message_id.id),
+            "CHAT_ID": str(chat_id),
+        }
+
+    chat_filters.update({name: filter_})
+
+    set_filters_chat(message.chat.id, chat_filters)
+    return await message.edit(
+        f"<b>Фильтр</b> <code>{name}</code> добавлен."
+    )
 
 
 @Client.on_message(filters.command(["filters"], prefix) & filters.me)
+@handle_errors
 async def filters_handler(client: Client, message: Message):
-    try:
-        text = ""
-        for index, a in enumerate(
-            get_filters_chat(message.chat.id).items(), start=1
-        ):
-            key, item = a
-            key = key.replace("<", "").replace(">", "")
-            text += f"{index}. <code>{key}</code>\n"
-        text = f"<b>Your filters in current chat</b>:\n\n" f"{text}"
-        text = text[:4096]
-        return await message.edit(text)
-    except Exception as e:
-        return await message.edit(format_exc(e))
+    text = ""
+    for index, a in enumerate(
+        get_filters_chat(message.chat.id).items(), start=1
+    ):
+        key, item = a
+        key = key.replace("<", "").replace(">", "")
+        text += f"{index}. <code>{key}</code>\n"
+    text = f"<b>Ваши фильтры в текущем чате</b>:\n\n" f"{text}"
+    text = text[:4096]
+    return await message.edit(text)
 
 
 @Client.on_message(
     filters.command(["delfilter", "filterdel", "fdel"], prefix) & filters.me
 )
+@handle_errors
 async def filter_del_handler(client: Client, message: Message):
-    try:
-        if len(message.text.split()) < 2:
-            return await message.edit(
-                f"<b>Usage</b>: <code>{prefix}fdel [name]</code>"
-            )
-        name = message.text.split(maxsplit=1)[1].lower()
-        chat_filters = get_filters_chat(message.chat.id)
-        if name not in chat_filters.keys():
-            return await message.edit(
-                f"<b>Filter</b> <code>{name}</code> doesn't exists."
-            )
-        del chat_filters[name]
-        set_filters_chat(message.chat.id, chat_filters)
+    if len(message.text.split()) < 2:
         return await message.edit(
-            f"<b>Filter</b> <code>{name}</code> has been deleted."
+            f"<b>Использование</b>: <code>{prefix}fdel [name]</code>"
         )
-    except Exception as e:
-        return await message.edit(format_exc(e))
+    name = message.text.split(maxsplit=1)[1].lower()
+    chat_filters = get_filters_chat(message.chat.id)
+    if name not in chat_filters.keys():
+        return await message.edit(
+            f"<b>Фильтр</b> <code>{name}</code> не существует."
+        )
+    del chat_filters[name]
+    set_filters_chat(message.chat.id, chat_filters)
+    return await message.edit(
+        f"<b>Фильтр</b> <code>{name}</code> удалён."
+    )
 
 
 @Client.on_message(filters.command(["fsearch"], prefix) & filters.me)
+@handle_errors
 async def filter_search_handler(client: Client, message: Message):
-    try:
-        if len(message.text.split()) < 2:
-            return await message.edit(
-                f"<b>Usage</b>: <code>{prefix}fsearch [name]</code>"
-            )
-        name = message.text.split(maxsplit=1)[1].lower()
-        chat_filters = get_filters_chat(message.chat.id)
-        if name not in chat_filters.keys():
-            return await message.edit(
-                f"<b>Filter</b> <code>{name}</code> doesn't exists."
-            )
+    if len(message.text.split()) < 2:
         return await message.edit(
-            f"<b>Trigger</b>:\n<code>{name}</code"
-            f">\n<b>Answer</b>:\n{chat_filters[name]}"
+            f"<b>Использование</b>: <code>{prefix}fsearch [name]</code>"
         )
-    except Exception as e:
-        return await message.edit(format_exc(e))
+    name = message.text.split(maxsplit=1)[1].lower()
+    chat_filters = get_filters_chat(message.chat.id)
+    if name not in chat_filters.keys():
+        return await message.edit(
+            f"<b>Фильтр</b> <code>{name}</code> не существует."
+        )
+    return await message.edit(
+        f"<b>Триггер</b>:\n<code>{name}</code"
+        f">\n<b>Ответ</b>:\n{chat_filters[name]}"
+    )
 
 
 modules_help["filters"] = {
-    "filter [name]": "Create filter (Reply required)",
-    "filters": "List of all triggers",
-    "fdel [name]": "Delete filter by name",
-    "fsearch [name]": "Info filter by name",
+    "filter [name]": "Создать фильтр (нужен ответ)",
+    "filters": "Список всех триггеров",
+    "fdel [name]": "Удалить фильтр по имени",
+    "fsearch [name]": "Информация о фильтре по имени",
 }

@@ -1,5 +1,5 @@
-#  Dragon-Userbot - telegram userbot
-#  Copyright (C) 2020-present Dragon Userbot Organization
+#  Nexus-Userbot - telegram userbot
+#  Copyright (C) 2020-present Nexus Userbot Organization
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -22,11 +22,12 @@ import requests
 from pyrogram import Client, errors, filters, types
 
 from utils.misc import modules_help, prefix
-from utils.scripts import format_exc, resize_image, with_reply
+from utils.scripts import handle_errors, resize_image, with_reply
 
 
 @Client.on_message(filters.command(["q", "quote"], prefix) & filters.me)
 @with_reply
+@handle_errors
 async def quote_cmd(client: Client, message: types.Message):
     if len(message.command) > 1 and message.command[1].isdigit():
         count = int(message.command[1])
@@ -64,9 +65,9 @@ async def quote_cmd(client: Client, message: types.Message):
 
     if send_for_me:
         await message.delete()
-        message = await client.send_message("me", "<b>Generating...</b>")
+        message = await client.send_message("me", "<b>Генерация...</b>")
     else:
-        await message.edit("<b>Generating...</b>")
+        await message.edit("<b>Генерация...</b>")
 
     url = "https://quotes.fl1yd.su/generate"
     params = {
@@ -82,26 +83,23 @@ async def quote_cmd(client: Client, message: types.Message):
     response = requests.post(url, json=params)
     if not response.ok:
         return await message.edit(
-            f"<b>Quotes API error!</b>\n" f"<code>{response.text}</code>"
+            f"<b>Ошибка API Quotes!</b>\n" f"<code>{response.text}</code>"
         )
 
     resized = resize_image(
         BytesIO(response.content), img_type="PNG" if is_png else "WEBP"
     )
-    await message.edit("<b>Sending...</b>")
+    await message.edit("<b>Отправка...</b>")
 
-    try:
-        func = client.send_document if is_png else client.send_sticker
-        chat_id = "me" if send_for_me else message.chat.id
-        await func(chat_id, resized)
-    except errors.RPCError as e:  # no rights to send stickers, etc
-        await message.edit(format_exc(e))
-    else:
-        await message.delete()
+    func = client.send_document if is_png else client.send_sticker
+    chat_id = "me" if send_for_me else message.chat.id
+    await func(chat_id, resized)
+    await message.delete()
 
 
 @Client.on_message(filters.command(["fq", "fakequote"], prefix) & filters.me)
 @with_reply
+@handle_errors
 async def fake_quote_cmd(client: Client, message: types.Message):
     is_png = "!png" in message.command or "!file" in message.command
     send_for_me = "!me" in message.command or "!ls" in message.command
@@ -116,7 +114,7 @@ async def fake_quote_cmd(client: Client, message: types.Message):
     )
 
     if not fake_quote_text:
-        return await message.edit("<b>Fake quote text is empty</b>")
+        return await message.edit("<b>Текст фейк-цитаты пуст</b>")
 
     q_message = await client.get_messages(
         message.chat.id, message.reply_to_message.id
@@ -128,9 +126,9 @@ async def fake_quote_cmd(client: Client, message: types.Message):
 
     if send_for_me:
         await message.delete()
-        message = await client.send_message("me", "<b>Generating...</b>")
+        message = await client.send_message("me", "<b>Генерация...</b>")
     else:
-        await message.edit("<b>Generating...</b>")
+        await message.edit("<b>Генерация...</b>")
 
     url = "https://quotes.fl1yd.su/generate"
     params = {
@@ -142,22 +140,18 @@ async def fake_quote_cmd(client: Client, message: types.Message):
     response = requests.post(url, json=params)
     if not response.ok:
         return await message.edit(
-            f"<b>Quotes API error!</b>\n<code>{response.text}</code>"
+            f"<b>Ошибка API Quotes!</b>\n<code>{response.text}</code>"
         )
 
     resized = resize_image(
         BytesIO(response.content), img_type="PNG" if is_png else "WEBP"
     )
-    await message.edit("<b>Sending...</b>")
+    await message.edit("<b>Отправка...</b>")
 
-    try:
-        func = client.send_document if is_png else client.send_sticker
-        chat_id = "me" if send_for_me else message.chat.id
-        await func(chat_id, resized)
-    except errors.RPCError as e:  # no rights to send stickers, etc
-        await message.edit(format_exc(e))
-    else:
-        await message.delete()
+    func = client.send_document if is_png else client.send_sticker
+    chat_id = "me" if send_for_me else message.chat.id
+    await func(chat_id, resized)
+    await message.delete()
 
 
 files_cache = {}
@@ -492,8 +486,8 @@ def get_full_name(user: types.User) -> str:
 
 
 modules_help["squotes"] = {
-    "q [reply]* [count 1-15] [!png] [!me] [!noreply]": "Generate a quote\n"
-    "Available options: !png — send as PNG, !me — send quote to"
-    "saved messages, !noreply — generate quote without reply",
-    "fq [reply]* [!png] [!me] [!noreply] [text]*": "Generate a fake quote",
+    "q [reply]* [count 1-15] [!png] [!me] [!noreply]": "Сгенерировать цитату\n"
+    "Доступные опции: !png — отправить как PNG, !me — отправить цитату в"
+    "избранное, !noreply — сгенерировать цитату без ответа",
+    "fq [reply]* [!png] [!me] [!noreply] [text]*": "Сгенерировать фейк-цитату",
 }

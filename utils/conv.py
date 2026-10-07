@@ -1,5 +1,5 @@
-#  Dragon-Userbot - telegram userbot
-#  Copyright (C) 2020-present Dragon Userbot Organization
+#  Nexus-Userbot - telegram userbot
+#  Copyright (C) 2020-present Nexus Userbot Organization
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -143,35 +143,36 @@ class Conversation:
         reply_to_message_id: int = None,
         schedule_date: int = None,
     ) -> types.Message:
-        """Send text messages.
+        """Отправляет текстовые сообщения.
 
-        Parameters:
+        Параметры:
             text (``str``):
-                Text of the message to be sent.
+                Текст отправляемого сообщения.
 
             parse_mode (``str``, *optional*):
-                By default, texts are parsed using HTML style.
-                Pass "markdown" or "md" to enable Markdown-style parsing.
-                Pass None to completely disable style parsing.
+                По умолчанию тексты парсятся в стиле HTML.
+                Укажите "markdown" или "md", чтобы включить парсинг в стиле Markdown.
+                Передайте None, чтобы полностью отключить парсинг стиля.
 
             entities (List of :obj:`~pyrogram.types.MessageEntity`):
-                List of special entities that appear in message text, which can be specified instead of *parse_mode*.
+                Список специальных сущностей, встречающихся в тексте сообщения,
+                которые можно указать вместо *parse_mode*.
 
             disable_web_page_preview (``bool``, *optional*):
-                Disables link previews for links in this message.
+                Отключает предпросмотры ссылок в этом сообщении.
 
             disable_notification (``bool``, *optional*):
-                Sends the message silently.
-                Users will receive a notification with no sound.
+                Отправляет сообщение без уведомления.
+                Пользователи получат уведомление без звука.
 
             reply_to_message_id (``int``, *optional*):
-                If the message is a reply, ID of the original message.
+                Если сообщение является ответом, идентификатор исходного сообщения.
 
             schedule_date (``int``, *optional*):
-                Date when the message will be automatically sent. Unix time.
+                Дата, когда сообщение будет автоматически отправлено. Unix-время.
 
-        Returns:
-            :obj:`~pyrogram.types.Message`: On success, the sent text message is returned.
+        Возвращает:
+            :obj:`~pyrogram.types.Message`: При успехе возвращается отправленное текстовое сообщение.
         """
 
         sent = await self.client.send_message(

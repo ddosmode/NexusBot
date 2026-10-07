@@ -1,18 +1,3 @@
-#  Dragon-Userbot - telegram userbot
-#  Copyright (C) 2020-present Dragon Userbot Organization
-#
-#  This program is free software: you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation, either version 3 of the License, or
-#  (at your option) any later version.
-
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-
-#  You should have received a copy of the GNU General Public License
-#  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import asyncio
 import logging
 import os
@@ -29,6 +14,7 @@ from utils import config
 from utils.db import db
 from utils.misc import gitrepo, userbot_version
 from utils.scripts import load_module, restart
+from utils.constants import PROJECT_NAME
 
 script_path = os.path.dirname(os.path.realpath(__file__))
 if script_path != os.getcwd():
@@ -41,7 +27,7 @@ app = Client(
     hide_password=True,
     workdir=script_path,
     app_version=userbot_version,
-    device_model=f"Dragon-Userbot @ {gitrepo.head.commit.hexsha[:7]}",
+    device_model=f"{PROJECT_NAME} @ {gitrepo.head.commit.hexsha[:7]}",
     system_version=platform.version() + " " + platform.machine(),
     sleep_threshold=30,
     test_mode=config.test_server,
@@ -58,7 +44,7 @@ async def main():
     except sqlite3.OperationalError as e:
         if str(e) == "database is locked" and os.name == "posix":
             logging.warning(
-                "Session file is locked. Trying to kill blocking process..."
+                "Файл сессии заблокирован. Попытка убить блокирующий процесс..."
             )
             subprocess.run(["fuser", "-k", "my_account.session"])
             restart()
@@ -66,7 +52,7 @@ async def main():
     except (errors.NotAcceptable, errors.Unauthorized) as e:
         logging.error(
             f"{e.__class__.__name__}: {e}\n"
-            f"Moving session file to my_account.session-old..."
+            f"Перемещение файла сессии в my_account.session-old..."
         )
         os.rename("./my_account.session", "./my_account.session-old")
         restart()
@@ -80,19 +66,19 @@ async def main():
                 path.stem, app, core="custom_modules" not in path.parent.parts
             )
         except Exception:
-            logging.warning(f"Can't import module {path.stem}", exc_info=True)
+            logging.warning(f"Не удалось импортировать модуль {path.stem}", exc_info=True)
             failed_modules += 1
         else:
             success_modules += 1
 
-    logging.info(f"Imported {success_modules} modules")
+    logging.info(f"Импортировано {success_modules} модулей")
     if failed_modules:
-        logging.warning(f"Failed to import {failed_modules} modules")
+        logging.warning(f"Не удалось импортировать {failed_modules} модулей")
 
     if info := db.get("core.updater", "restart_info"):
         text = {
-            "restart": "<b>Restart completed!</b>",
-            "update": "<b>Update process completed!</b>",
+            "restart": "<b>Перезапуск завершён!</b>",
+            "update": "<b>Процесс обновления завершён!</b>",
         }[info["type"]]
         try:
             await app.edit_message_text(
@@ -115,7 +101,7 @@ async def main():
             ],
         )
 
-    logging.info("Dragon-Userbot started!")
+    logging.info("NexusBot запущен!")
 
     await idle()
 

@@ -1,5 +1,5 @@
-#  Dragon-Userbot - telegram userbot
-#  Copyright (C) 2020-present Dragon Userbot Organization
+#  Nexus-Userbot - telegram userbot
+#  Copyright (C) 2020-present Nexus Userbot Organization
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -25,6 +25,15 @@ from utils.scripts import with_reply
 
 @Client.on_message(filters.command("del", prefix) & filters.me)
 async def del_msg(_, message: Message):
+    """Удаляет сообщение-ответ и само команду.
+
+    Args:
+        _: Клиент (не используется).
+        message: Сообщение, вызвавшее команду.
+
+    Returns:
+        None: Сообщения удаляются.
+    """
     await message.delete()
     await message.reply_to_message.delete()
 
@@ -32,6 +41,15 @@ async def del_msg(_, message: Message):
 @Client.on_message(filters.command("purge", prefix) & filters.me)
 @with_reply
 async def purge(client: Client, message: Message):
+    """Удаляет все сообщения от реплая до последнего.
+
+    Args:
+        client: Клиент Pyrogram.
+        message: Сообщение, вызвавшее команду.
+
+    Returns:
+        None: Сообщения удаляются пачками по 100 штук.
+    """
     chunk = []
     async for msg in client.get_chat_history(
         chat_id=message.chat.id,
@@ -50,6 +68,6 @@ async def purge(client: Client, message: Message):
 
 
 modules_help["purge"] = {
-    "purge [reply]": "Purge (delete all messages) chat from replied message to last",
-    "del [reply]": "Delete replied message",
+    "purge [reply]": "Удалить все сообщения от ответа до последнего",
+    "del [reply]": "Удалить сообщение-ответ",
 }

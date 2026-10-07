@@ -1,5 +1,5 @@
-#  Dragon-Userbot - telegram userbot
-#  Copyright (C) 2020-present Dragon Userbot Organization
+#  Nexus-Userbot - telegram userbot
+#  Copyright (C) 2020-present Nexus Userbot Organization
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -31,14 +31,14 @@ from utils.misc import modules_help, prefix
 
 @Client.on_message(filters.command(["save"], prefix) & filters.me)
 async def save_note(client: Client, message: Message):
-    await message.edit("<b>Loading...</b>")
+    await message.edit("<b>Загрузка...</b>")
 
     try:
         chat = await client.get_chat(db.get("core.notes", "chat_id", 0))
     except (errors.RPCError, ValueError, KeyError):
         # group is not accessible or isn't created
         chat = await client.create_supergroup(
-            "Dragon_Userbot_Notes_Filters", "Don't touch this group, please"
+            "Nexus_Userbot_Notes_Filters", "Don't touch this group, please"
         )
         db.set("core.notes", "chat_id", chat.id)
 
@@ -61,7 +61,7 @@ async def save_note(client: Client, message: Message):
                     )
                 except errors.ChatForwardsRestricted:
                     await message.edit(
-                        "<b>Forwarding messages is restricted by chat admins</b>"
+                        "<b>Пересылка сообщений ограничена администраторами чата</b>"
                     )
                     return
                 note = {
@@ -70,9 +70,9 @@ async def save_note(client: Client, message: Message):
                     "CHAT_ID": str(chat_id),
                 }
                 db.set("core.notes", f"note{note_name}", note)
-                await message.edit(f"<b>Note {note_name} saved</b>")
+                await message.edit(f"<b>Заметка {note_name} сохранена</b>")
             else:
-                await message.edit("<b>This note already exists</b>")
+                await message.edit("<b>Такая заметка уже существует</b>")
         else:
             checking_note = db.get("core.notes", f"note{note_name}", False)
             if not checking_note:
@@ -86,9 +86,9 @@ async def save_note(client: Client, message: Message):
                     "CHAT_ID": str(chat_id),
                 }
                 db.set("core.notes", f"note{note_name}", note)
-                await message.edit(f"<b>Note {note_name} saved</b>")
+                await message.edit(f"<b>Заметка {note_name} сохранена</b>")
             else:
-                await message.edit("<b>This note already exists</b>")
+                await message.edit("<b>Такая заметка уже существует</b>")
     elif len(message.text.split()) >= 3:
         note_name = message.text.split(maxsplit=1)[1].split()[0]
         checking_note = db.get("core.notes", f"note{note_name}", False)
@@ -102,19 +102,19 @@ async def save_note(client: Client, message: Message):
                 "CHAT_ID": str(chat_id),
             }
             db.set("core.notes", f"note{note_name}", note)
-            await message.edit(f"<b>Note {note_name} saved</b>")
+            await message.edit(f"<b>Заметка {note_name} сохранена</b>")
         else:
-            await message.edit("<b>This note already exists</b>")
+            await message.edit("<b>Такая заметка уже существует</b>")
     else:
         await message.edit(
-            f"<b>Example: <code>{prefix}save note_name</code></b>"
+            f"<b>Пример: <code>{prefix}save имя_заметки</code></b>"
         )
 
 
 @Client.on_message(filters.command(["note"], prefix) & filters.me)
 async def note_send(client: Client, message: Message):
     if len(message.text.split()) >= 2:
-        await message.edit("<b>Loading...</b>")
+        await message.edit("<b>Загрузка...</b>")
 
         note_name = f"{message.text.split(maxsplit=1)[1]}"
         find_note = db.get("core.notes", f"note{note_name}", False)
@@ -125,8 +125,8 @@ async def note_send(client: Client, message: Message):
                 )
             except errors.RPCError:
                 await message.edit(
-                    "<b>Sorry, but this note is unavaliable.\n\n"
-                    f"You can delete this note with "
+                    "<b>К сожалению, эта заметка недоступна.\n\n"
+                    f"Удалить её можно командой "
                     f"<code>{prefix}clear {note_name}</code></b>"
                 )
                 return
@@ -237,17 +237,17 @@ async def note_send(client: Client, message: Message):
                 )
             await message.delete()
         else:
-            await message.edit("<b>There is no such note</b>")
+            await message.edit("<b>Такой заметки нет</b>")
     else:
         await message.edit(
-            f"<b>Example: <code>{prefix}note note_name</code></b>"
+            f"<b>Пример: <code>{prefix}note имя_заметки</code></b>"
         )
 
 
 @Client.on_message(filters.command(["notes"], prefix) & filters.me)
 async def notes(_, message: Message):
-    await message.edit("<b>Loading...</b>")
-    text = "Available notes:\n\n"
+    await message.edit("<b>Загрузка...</b>")
+    text = "Доступные заметки:\n\n"
     collection = db.get_collection("core.notes")
     for note in collection.keys():
         if note[:4] == "note":
@@ -262,18 +262,18 @@ async def clear_note(_, message: Message):
         find_note = db.get("core.notes", f"note{note_name}", False)
         if find_note:
             db.remove("core.notes", f"note{note_name}")
-            await message.edit(f"<b>Note {note_name} deleted</b>")
+            await message.edit(f"<b>Заметка {note_name} удалена</b>")
         else:
-            await message.edit("<b>There is no such note</b>")
+            await message.edit("<b>Такой заметки нет</b>")
     else:
         await message.edit(
-            f"<b>Example: <code>{prefix}clear note_name</code></b>"
+            f"<b>Пример: <code>{prefix}clear имя_заметки</code></b>"
         )
 
 
 modules_help["notes"] = {
-    "save [name]*": "Save note",
-    "note [name]*": "Get saved note",
-    "notes": "Get note list",
-    "clear [name]*": "Delete note",
+    "save [name]*": "Сохранить заметку",
+    "note [name]*": "Получить сохранённую заметку",
+    "notes": "Получить список заметок",
+    "clear [name]*": "Удалить заметку",
 }

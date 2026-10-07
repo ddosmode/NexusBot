@@ -1,5 +1,5 @@
-#  Dragon-Userbot - telegram userbot
-#  Copyright (C) 2020-present Dragon Userbot Organization
+#  Nexus-Userbot - telegram userbot
+#  Copyright (C) 2020-present Nexus Userbot Organization
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -33,8 +33,17 @@ from utils.scripts import format_exc
     filters.command(["ex", "exec", "py", "exnoedit"], prefix) & filters.me
 )
 def user_exec(client: Client, message: Message):
+    """Выполняет Python-код.
+
+    Args:
+        client: Клиент Pyrogram.
+        message: Сообщение, вызвавшее команду.
+
+    Returns:
+        None: Результат выводится через редактирование или ответом.
+    """
     if len(message.command) == 1:
-        message.edit("<b>Code to execute isn't provided</b>")
+        message.edit("<b>Код для выполнения не указан</b>")
         return
 
     reply = message.reply_to_message
@@ -42,15 +51,15 @@ def user_exec(client: Client, message: Message):
     code = message.text.split(maxsplit=1)[1]
     stdout = StringIO()
 
-    message.edit("<b>Executing...</b>")
+    message.edit("<b>Выполняю...</b>")
 
     try:
         with redirect_stdout(stdout):
             exec(code)
         text = (
-            "<b>Code:</b>\n"
+            "<b>Код:</b>\n"
             f"<pre language=python>{code}</pre>\n\n"
-            "<b>Result</b>:\n"
+            "<b>Результат</b>:\n"
             f"<code>{stdout.getvalue()}</code>"
         )
         if message.command[0] == "exnoedit":
@@ -58,14 +67,23 @@ def user_exec(client: Client, message: Message):
         else:
             message.edit(text)
     except Exception as e:
-        message.edit(format_exc(e, f"Code was <code>{code}</code>"))
+        message.edit(format_exc(e, f"Код был <code>{code}</code>"))
 
 
 # noinspection PyUnusedLocal
 @Client.on_message(filters.command(["ev", "eval"], prefix) & filters.me)
 def user_eval(client: Client, message: Message):
+    """Вычисляет Python-выражение.
+
+    Args:
+        client: Клиент Pyrogram.
+        message: Сообщение, вызвавшее команду.
+
+    Returns:
+        None: Результат выводится через редактирование сообщения.
+    """
     if len(message.command) == 1:
-        message.edit("<b>Code to eval isn't provided</b>")
+        message.edit("<b>Выражение для вычисления не указано</b>")
         return
 
     reply = message.reply_to_message
@@ -75,17 +93,17 @@ def user_eval(client: Client, message: Message):
     try:
         result = eval(code)
         message.edit(
-            "<b>Expression:</b>\n"
+            "<b>Выражение:</b>\n"
             f"<pre language=python>{code}</pre>\n\n"
-            "<b>Result</b>:\n"
+            "<b>Результат</b>:\n"
             f"<code>{result}</code>"
         )
     except Exception as e:
-        message.edit(format_exc(e, f"Code was <code>{code}</code>"))
+        message.edit(format_exc(e, f"Код был <code>{code}</code>"))
 
 
 modules_help["python"] = {
-    "ex [python code]": "Execute Python code",
-    "exnoedit [python code]": "Execute Python code and return result with reply",
-    "eval [python code]": "Eval Python code",
+    "ex [python code]": "Выполнить Python-код",
+    "exnoedit [python code]": "Выполнить Python-код и вернуть результат ответом",
+    "eval [python code]": "Вычислить Python-выражение",
 }

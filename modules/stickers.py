@@ -1,5 +1,5 @@
-#  Dragon-Userbot - telegram userbot
-#  Copyright (C) 2020-present Dragon Userbot Organization
+#  Nexus-Userbot - telegram userbot
+#  Copyright (C) 2020-present Nexus Userbot Organization
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@ from pyrogram import Client, filters, types
 
 from utils.misc import modules_help, prefix
 from utils.scripts import (
-    format_exc,
+    handle_errors,
     interact_with,
     interact_with_to_delete,
     resize_image,
@@ -29,12 +29,21 @@ from utils.scripts import (
 @Client.on_message(filters.command("kang", prefix) & filters.me)
 @with_reply
 async def kang(client: Client, message: types.Message):
-    await message.edit("<b>Please wait...</b>")
+    """Добавляет стикер в указанный набор.
+
+    Args:
+        client: Клиент Pyrogram.
+        message: Сообщение, вызвавшее команду.
+
+    Returns:
+        None: Статус выводится через редактирование сообщения.
+    """
+    await message.edit("<b>Подождите...</b>")
 
     if len(message.command) < 2:
         await message.edit(
-            "<b>No arguments provided\n"
-            f"Usage: <code>{prefix}kang [pack]* [emoji]</code></b>"
+            "<b>Аргументы не указаны\n"
+            f"Использование: <code>{prefix}kang [pack]* [emoji]</code></b>"
         )
         return
 
@@ -50,11 +59,11 @@ async def kang(client: Client, message: types.Message):
 
     result = await interact_with(await client.send_message("@stickers", pack))
     if ".TGS" in result.text:
-        await message.edit("<b>Animated packs aren't supported</b>")
+        await message.edit("<b>Анимированные наборы не поддерживаются</b>")
         return
     if "StickerExample.psd" not in result.text:
         await message.edit(
-            "<b>Stickerpack doesn't exitst. Create it using @Stickers bot (via /newpack command)</b>"
+            "<b>Набор стикеров не существует. Создайте его через @Stickers бота (команда /newpack)</b>"
         )
         return
 
@@ -62,7 +71,7 @@ async def kang(client: Client, message: types.Message):
         path = await message.reply_to_message.download(in_memory=True)
     except ValueError:
         await message.edit(
-            "<b>Replied message doesn't contain any downloadable media</b>"
+            "<b>В ответе нет скачиваемого медиа</b>"
         )
         return
 
@@ -77,11 +86,11 @@ async def kang(client: Client, message: types.Message):
         await interact_with(await client.send_message("@stickers", "/done"))
         await client.delete_messages("@stickers", interact_with_to_delete)
         await message.edit(
-            f"<b>Sticker added to <a href=https://t.me/addstickers/{pack}>pack</a></b>"
+            f"<b>Стикер добавлен в <a href=https://t.me/addstickers/{pack}>набор</a></b>"
         )
     else:
         await message.edit(
-            "<b>Something went wrong. Check history with @stickers</b>"
+            "<b>Что-то пошло не так. Проверьте историю с @stickers</b>"
         )
     interact_with_to_delete.clear()
 
@@ -90,44 +99,37 @@ async def kang(client: Client, message: types.Message):
     filters.command(["stp", "s2p", "stick2png"], prefix) & filters.me
 )
 @with_reply
+@handle_errors
 async def stick2png(client: Client, message: types.Message):
-    try:
-        await message.edit("<b>Downloading...</b>")
+    await message.edit("<b>Скачивание...</b>")
 
-        file_io = await message.reply_to_message.download(in_memory=True)
-
-        await client.send_document(
-            message.chat.id, file_io, force_document=True
-        )
-    except Exception as e:
-        await message.edit(format_exc(e))
-    else:
-        await message.delete()
+    file_io = await message.reply_to_message.download(in_memory=True)
+    await client.send_document(
+        message.chat.id, file_io, force_document=True
+    )
+    await message.delete()
 
 
 @Client.on_message(filters.command(["resize"], prefix) & filters.me)
 @with_reply
+@handle_errors
 async def resize_cmd(client: Client, message: types.Message):
-    try:
-        await message.edit("<b>Downloading...</b>")
+    await message.edit("<b>Скачивание...</b>")
 
-        size = int(message.command[1]) if len(message.command) > 1 else 512
-        size2 = int(message.command[2]) if len(message.command) > 2 else None
+    size = int(message.command[1]) if len(message.command) > 1 else 512
+    size2 = int(message.command[2]) if len(message.command) > 2 else None
 
-        path = await message.reply_to_message.download(in_memory=True)
-        resized = resize_image(path, size=size, size2=size2)
+    path = await message.reply_to_message.download(in_memory=True)
+    resized = resize_image(path, size=size, size2=size2)
 
-        await client.send_document(
-            message.chat.id, resized, force_document=True
-        )
-    except Exception as e:
-        await message.edit(format_exc(e))
-    else:
-        await message.delete()
+    await client.send_document(
+        message.chat.id, resized, force_document=True
+    )
+    await message.delete()
 
 
 modules_help["stickers"] = {
-    "kang [reply]* [pack]* [emoji]": "Add sticker to defined pack",
-    "stp [reply]*": "Convert replied sticker to PNG",
-    "resize [reply]* [size] [size2]": "Resize replied image to 512xN (or SIZExSIZE2) format",
+    "kang [reply]* [pack]* [emoji]": "Добавить стикер в указанный набор",
+    "stp [reply]*": "Конвертировать стикер в PNG",
+    "resize [reply]* [size] [size2]": "Изменить размер изображения до 512xN (или SIZExSIZE2)",
 }

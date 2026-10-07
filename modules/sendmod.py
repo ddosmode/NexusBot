@@ -1,5 +1,5 @@
-#  Dragon-Userbot - telegram userbot
-#  Copyright (C) 2020-present Dragon Userbot Organization
+#  Nexus-Userbot - telegram userbot
+#  Copyright (C) 2020-present Nexus Userbot Organization
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -21,44 +21,51 @@ from pyrogram.types import Message
 
 from utils.misc import modules_help, prefix
 from utils.scripts import (
-    format_exc,
     format_module_help,
     format_small_module_help,
+    handle_errors,
 )
 
 
 @Client.on_message(filters.command(["sendmod", "sm"], prefix) & filters.me)
+@handle_errors
 async def sendmod(client: Client, message: Message):
+    """Отправляет модуль собеседнику.
+
+    Args:
+        client: Клиент Pyrogram.
+        message: Сообщение, вызвавшее команду.
+
+    Returns:
+        None: Файл модуля отправляется в чат, команда удаляется.
+    """
     if len(message.command) == 1:
-        await message.edit("<b>Module name to send is not provided</b>")
+        await message.edit("<b>Имя модуля для отправки не указано</b>")
         return
 
-    await message.edit("<b>Dispatching...</b>")
-    try:
-        module_name = message.command[1].lower()
-        if module_name in modules_help:
-            text = format_module_help(module_name)
-            if len(text) >= 1024:
-                text = format_small_module_help(module_name)
-            if os.path.isfile(f"modules/{module_name}.py"):
-                await client.send_document(
-                    message.chat.id, f"modules/{module_name}.py", caption=text
-                )
-            elif os.path.isfile(
-                f"modules/custom_modules/{module_name.lower()}.py"
-            ):
-                await client.send_document(
-                    message.chat.id,
-                    f"modules/custom_modules/{module_name}.py",
-                    caption=text,
-                )
-            await message.delete()
-        else:
-            await message.edit(f"<b>Module {module_name} not found!</b>")
-    except Exception as e:
-        await message.edit(format_exc(e))
+    await message.edit("<b>Отправляю...</b>")
+    module_name = message.command[1].lower()
+    if module_name in modules_help:
+        text = format_module_help(module_name)
+        if len(text) >= 1024:
+            text = format_small_module_help(module_name)
+        if os.path.isfile(f"modules/{module_name}.py"):
+            await client.send_document(
+                message.chat.id, f"modules/{module_name}.py", caption=text
+            )
+        elif os.path.isfile(
+            f"modules/custom_modules/{module_name.lower()}.py"
+        ):
+            await client.send_document(
+                message.chat.id,
+                f"modules/custom_modules/{module_name}.py",
+                caption=text,
+            )
+        await message.delete()
+    else:
+        await message.edit(f"<b>Модуль {module_name} не найден!</b>")
 
 
 modules_help["sendmod"] = {
-    "sendmod [module_name]": "Send module to interlocutor",
+    "sendmod [module_name]": "Отправить модуль собеседнику",
 }

@@ -1,5 +1,5 @@
-#  Dragon-Userbot - telegram userbot
-#  Copyright (C) 2020-present Dragon Userbot Organization
+#  Nexus-Userbot - telegram userbot
+#  Copyright (C) 2020-present Nexus Userbot Organization
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -56,22 +56,22 @@ async def anti_pm(_, message: Message):
     if len(message.command) == 1:
         if db.get("core.antipm", "status", False):
             await message.edit(
-                "<b>Anti-PM status: enabled\n"
-                f"Disable with: </b><code>{prefix}antipm disable</code>"
+                "<b>Статус Anti-PM: включён\n"
+                f"Выключить: </b><code>{prefix}antipm disable</code>"
             )
         else:
             await message.edit(
-                "<b>Anti-PM status: disabled\n"
-                f"Enable with: </b><code>{prefix}antipm enable</code>"
+                "<b>Статус Anti-PM: выключен\n"
+                f"Включить: </b><code>{prefix}antipm enable</code>"
             )
     elif message.command[1] in ["enable", "on", "1", "yes", "true"]:
         db.set("core.antipm", "status", True)
-        await message.edit("<b>Anti-PM enabled!</b>")
+        await message.edit("<b>Anti-PM включён!</b>")
     elif message.command[1] in ["disable", "off", "0", "no", "false"]:
         db.set("core.antipm", "status", False)
-        await message.edit("<b>Anti-PM disabled!</b>")
+        await message.edit("<b>Anti-PM выключен!</b>")
     else:
-        await message.edit(f"<b>Usage: {prefix}antipm [enable|disable]</b>")
+        await message.edit(f"<b>Использование: {prefix}antipm [enable|disable]</b>")
 
 
 @Client.on_message(filters.command(["antipm_report"], prefix) & filters.me)
@@ -79,23 +79,23 @@ async def antipm_report(_, message: Message):
     if len(message.command) == 1:
         if db.get("core.antipm", "spamrep", False):
             await message.edit(
-                "<b>Spam-reporting enabled.\n"
-                f"Disable with: </b><code>{prefix}antipm_report disable</code>"
+                "<b>Жалобы на спам включены.\n"
+                f"Выключить: </b><code>{prefix}antipm_report disable</code>"
             )
         else:
             await message.edit(
-                "<b>Spam-reporting disabled.\n"
-                f"Enable with: </b><code>{prefix}antipm_report enable</code>"
+                "<b>Жалобы на спам выключены.\n"
+                f"Включить: </b><code>{prefix}antipm_report enable</code>"
             )
     elif message.command[1] in ["enable", "on", "1", "yes", "true"]:
         db.set("core.antipm", "spamrep", True)
-        await message.edit("<b>Spam-reporting enabled!</b>")
+        await message.edit("<b>Жалобы на спам включены!</b>")
     elif message.command[1] in ["disable", "off", "0", "no", "false"]:
         db.set("core.antipm", "spamrep", False)
-        await message.edit("<b>Spam-reporting disabled!</b>")
+        await message.edit("<b>Жалобы на спам выключены!</b>")
     else:
         await message.edit(
-            f"<b>Usage: {prefix}antipm_report [enable|disable]</b>"
+            f"<b>Использование: {prefix}antipm_report [enable|disable]</b>"
         )
 
 
@@ -104,28 +104,28 @@ async def antipm_block(_, message: Message):
     if len(message.command) == 1:
         if db.get("core.antipm", "block", False):
             await message.edit(
-                "<b>Blocking users enabled.\n"
-                f"Disable with: </b><code>{prefix}antipm_block disable</code>"
+                "<b>Блокировка пользователей включена.\n"
+                f"Выключить: </b><code>{prefix}antipm_block disable</code>"
             )
         else:
             await message.edit(
-                "<b>Blocking users disabled.\n"
-                f"Enable with: </b><code>{prefix}antipm_block enable</code>"
+                "<b>Блокировка пользователей выключена.\n"
+                f"Включить: </b><code>{prefix}antipm_block enable</code>"
             )
     elif message.command[1] in ["enable", "on", "1", "yes", "true"]:
         db.set("core.antipm", "block", True)
-        await message.edit("<b>Blocking users enabled!</b>")
+        await message.edit("<b>Блокировка пользователей включена!</b>")
     elif message.command[1] in ["disable", "off", "0", "no", "false"]:
         db.set("core.antipm", "block", False)
-        await message.edit("<b>Blocking users disabled!</b>")
+        await message.edit("<b>Блокировка пользователей выключена!</b>")
     else:
         await message.edit(
-            f"<b>Usage: {prefix}antipm_block [enable|disable]</b>"
+            f"<b>Использование: {prefix}antipm_block [enable|disable]</b>"
         )
 
 
 modules_help["antipm"] = {
-    "antipm [enable|disable]*": "When enabled, deletes all messages from users who are not in the contact book",
-    "antipm_report [enable|disable]*": "Enable spam reporting",
-    "antipm_block [enable|disable]*": "Enable user blocking",
+    "antipm [enable|disable]*": "При включении удаляет все сообщения от пользователей, которых нет в контактах",
+    "antipm_report [enable|disable]*": "Включить жалобы на спам",
+    "antipm_block [enable|disable]*": "Включить блокировку пользователей",
 }

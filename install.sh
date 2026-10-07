@@ -1,6 +1,6 @@
 #!/bin/bash
 if command -v termux-setup-storage; then
-  echo For termux, please use https://raw.githubusercontent.com/Dragon-Userbot/Dragon-Userbot/main/termux-install.sh
+  echo For termux, please use https://raw.githubusercontent.com/NexusBot/NexusBot/main/termux-install.sh
   exit 1
 fi
 
@@ -12,24 +12,24 @@ fi
 apt update -y
 apt install python3 python3-pip git ffmpeg wget gnupg -y || exit 2
 
-su -c "python3 -m pip install -U pip" $SUDO_USER
-su -c "python3 -m pip install -U wheel pillow" $SUDO_USER
+su -c "python3 -m pip install --break-system-packages -U pip" $SUDO_USER
+su -c "python3 -m pip install --break-system-packages -U wheel pillow" $SUDO_USER
 
-if [[ -d "Dragon-Userbot" ]]; then
-  cd Dragon-Userbot
+if [[ -d "NexusBot" ]]; then
+  cd NexusBot
 elif [[ -f ".env.dist" ]] && [[ -f "main.py" ]] && [[ -d "modules" ]]; then
   :
 else
-  git clone https://github.com/Dragon-Userbot/Dragon-Userbot || exit 2
-  cd Dragon-Userbot || exit 2
+  git clone https://github.com/NexusBot/NexusBot || exit 2
+  cd NexusBot || exit 2
 fi
 
 if [[ -f ".env" ]] && [[ -f "my_account.session" ]]; then
-  echo "It seems that Dragon-Userbot is already installed. Exiting..."
+  echo "It seems that NexusBot is already installed. Exiting..."
   exit
 fi
 
-su -c "python3 -m pip install -U -r requirements.txt" $SUDO_USER || exit 2
+su -c "python3 -m pip install --break-system-packages -U -r requirements.txt" $SUDO_USER || exit 2
 
 echo
 echo "Enter API_ID and API_HASH"
@@ -57,7 +57,7 @@ case $db_type in
     echo "Please enter db_url"
     echo "You can get it here -> https://telegra.ph/How-to-get-Mongodb-URL-and-login-in-telegram-08-01"
     read -r -p "> " db_url
-    db_name=Dragon_Userbot
+    db_name=Nexus_Userbot
     db_type=mongodb
     ;;
   2)
@@ -73,7 +73,7 @@ case $db_type in
     systemctl start mongodb
 
     db_url=mongodb://localhost:27017
-    db_name=Dragon_Userbot
+    db_name=Nexus_Userbot
     db_type=mongodb
     ;;
   *)
@@ -115,22 +115,22 @@ case $install_type in
       su -c "pm2 startup" $SUDO_USER
       env PATH=$PATH:/usr/bin /usr/lib/node_modules/pm2/bin/pm2 startup systemd -u $SUDO_USER --hp /home/$SUDO_USER
     fi
-    su -c "pm2 start main.py --name dragon --interpreter python3" $SUDO_USER
+    su -c "pm2 start main.py --name nexus --interpreter python3" $SUDO_USER
     su -c "pm2 save" $SUDO_USER
 
     echo
     echo "============================"
-    echo "Great! Dragon-Userbot installed successfully and running now!"
+    echo "Great! NexusBot installed successfully and running now!"
     echo "Installation type: PM2"
-    echo "Start with: \"pm2 start dragon\""
-    echo "Stop with: \"pm2 stop dragon\""
-    echo "Process name: dragon"
+    echo "Start with: \"pm2 start nexus\""
+    echo "Stop with: \"pm2 stop nexus\""
+    echo "Process name: nexus"
     echo "============================"
     ;;
   2)
-    cat > /etc/systemd/system/dragon.service << EOL
+    cat > /etc/systemd/system/nexus.service << EOL
 [Unit]
-Description=Service for Dragon Userbot
+Description=Service for Nexus Userbot
 
 [Service]
 Type=simple
@@ -144,21 +144,21 @@ Group=${SUDO_USER}
 WantedBy=multi-user.target
 EOL
     systemctl daemon-reload
-    systemctl start dragon
-    systemctl enable dragon
+    systemctl start nexus
+    systemctl enable nexus
 
     echo
     echo "============================"
-    echo "Great! Dragon-Userbot installed successfully and running now!"
+    echo "Great! NexusBot installed successfully and running now!"
     echo "Installation type: Systemd service"
-    echo "Start with: \"sudo systemctl start dragon\""
-    echo "Stop with: \"sudo systemctl stop dragon\""
+    echo "Start with: \"sudo systemctl start nexus\""
+    echo "Stop with: \"sudo systemctl stop nexus\""
     echo "============================"
     ;;
   *)
     echo
     echo "============================"
-    echo "Great! Dragon-Userbot installed successfully!"
+    echo "Great! NexusBot installed successfully!"
     echo "Installation type: Custom"
     echo "Start with: \"python3 main.py\""
     echo "============================"

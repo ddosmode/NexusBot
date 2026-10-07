@@ -1,5 +1,5 @@
-#  Dragon-Userbot - telegram userbot
-#  Copyright (C) 2020-present Dragon Userbot Organization
+#  Nexus-Userbot - telegram userbot
+#  Copyright (C) 2020-present Nexus Userbot Organization
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -22,6 +22,15 @@ from utils.misc import modules_help, prefix
 
 @Client.on_message(filters.command(["say", "s"], prefix) & filters.me)
 async def say(_, message: Message):
+    """Отправляет сообщение, которое не будет интерпретировано юзерботом.
+
+    Args:
+        _: Клиент (не используется).
+        message: Сообщение, вызвавшее команду.
+
+    Returns:
+        None: Текст команды отправляется как обычное сообщение.
+    """
     if len(message.command) == 1:
         return
     command = " ".join(message.command[1:])
@@ -29,5 +38,5 @@ async def say(_, message: Message):
 
 
 modules_help["say"] = {
-    "say [command]*": "Send message that won't be interpreted by userbot",
+    "say [command]*": "Отправить сообщение, не обрабатываемое юзерботом",
 }

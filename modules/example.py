@@ -1,5 +1,5 @@
-#  Dragon-Userbot - telegram userbot
-#  Copyright (C) 2020-present Dragon Userbot Organization
+#  Nexus-Userbot - telegram userbot
+#  Copyright (C) 2020-present Nexus Userbot Organization
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -31,24 +31,24 @@ from utils.misc import modules_help, prefix
 
 @Client.on_message(filters.command("example_edit", prefix) & filters.me)
 async def example_edit(client: Client, message: Message):
-    await message.edit("<code>This is an example module</code>")
+    await message.edit("<code>Это пример модуля</code>")
 
 
 @Client.on_message(filters.command("example_send", prefix) & filters.me)
 async def example_send(client: Client, message: Message):
     await client.send_message(
-        message.chat.id, "<b>This is an example module</b>"
+        message.chat.id, "<b>Это пример модуля</b>"
     )
 
 
-# This adds instructions for your module
+# Это добавляет подсказки для твоего модуля
 modules_help["example"] = {
-    "example_send": "example send",
-    "example_edit": "example edit",
+    "example_send": "пример отправки",
+    "example_edit": "пример редактирования",
 }
 
-# modules_help["example"] = { "example_send [text]": "example send" }
+# modules_help["example"] = { "example_send [text]": "пример отправки" }
 #                  |            |              |        |
-#                  |            |              |        └─ command description
-#           module_name         command_name   └─ optional command arguments
-#        (only snake_case)   (only snake_case too)
+#                  |            |              |        └─ описание команды
+#           module_name         command_name   └─ необязательные аргументы команды
+#        (только snake_case)  (только snake_case тоже)

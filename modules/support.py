@@ -1,5 +1,5 @@
-#  Dragon-Userbot - telegram userbot
-#  Copyright (C) 2020-present Dragon Userbot Organization
+#  Nexus-Userbot - telegram userbot
+#  Copyright (C) 2020-present Nexus Userbot Organization
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -26,6 +26,12 @@ from utils.misc import (
     python_version,
     userbot_version,
 )
+from utils.constants import (
+    GITHUB_REPO,
+    CHANNEL,
+    MODULES_CHANNEL,
+    CHAT,
+)
 
 
 @Client.on_message(filters.command(["support", "repo"], prefix) & filters.me)
@@ -38,18 +44,18 @@ async def support(_, message: Message):
     )
 
     await message.edit(
-        f"<b>Dragon-Userbot\n\n"
-        "GitHub: <a href=https://github.com/Dragon-Userbot/Dragon-Userbot>Dragon-Userbot/Dragon-Userbot</a>\n"
-        "Custom modules repository: <a href=https://github.com/Dragon-Userbot/custom_modules>"
-        "Dragon-Userbot/custom_modules</a>\n"
-        "License: <a href=https://github.com/Dragon-Userbot/Dragon-Userbot/blob/master/LICENSE>GNU GPL v3</a>\n\n"
-        "Channel: @Dragon_Userb0t\n"
-        "Custom modules: @Dragon_Userb0t_modules\n"
-        "Chat [RU]: @Dragon_Userb0t_chat\n"
-        f"Main developers: {', '.join(devs)}\n\n"
-        f"Python version: {python_version}\n"
-        f"Modules count: {len(modules_help) / 1}\n"
-        f"Commands count: {commands_count}</b>",
+        f"<b>NexusBot\n\n"
+        f"GitHub: <a href={GITHUB_REPO}>{GITHUB_REPO.split('/')[-1]}</a>\n"
+        f"Репозиторий пользовательских модулей: <a href={GITHUB_REPO}/custom_modules>"
+        f"{GITHUB_REPO.split('/')[-1]}/custom_modules</a>\n"
+        f"Лицензия: <a href={GITHUB_REPO}/blob/master/LICENSE>GNU GPL v3</a>\n\n"
+        f"Канал: {CHANNEL}\n"
+        f"Пользовательские модули: {MODULES_CHANNEL}\n"
+        f"Чат [RU]: {CHAT}\n"
+        f"Основные разработчики: {', '.join(devs)}\n\n"
+        f"Версия Python: {python_version}\n"
+        f"Количество модулей: {len(modules_help) / 1}\n"
+        f"Количество команд: {commands_count}</b>",
         disable_web_page_preview=True,
     )
 
@@ -59,7 +65,7 @@ async def version(client: Client, message: Message):
     changelog = ""
     ub_version = ".".join(userbot_version.split(".")[:2])
     async for m in client.search_messages(
-        "dRaGoN_uB_cHaNgElOg", query=ub_version + "."
+        "Nexus_Userb0t", query=ub_version + "."
     ):
         if ub_version in m.text:
             changelog = m.id
@@ -74,25 +80,25 @@ async def version(client: Client, message: Message):
     )
 
     await message.reply(
-        f"<b>Dragon Userbot version: {userbot_version}\n"
-        f"Changelog </b><i><a href=https://t.me/dRaGoN_uB_cHaNgElOg/{changelog}>in channel</a></i>.<b>\n"
-        f"Changelogs are written by </b><i>"
+        f"<b>Версия NexusBot: {userbot_version}\n"
+        f"Чейнджлог </b><i><a href=https://t.me/Nexus_Userb0t/{changelog}>в канале</a></i>.<b>\n"
+        f"Чейнджлоги пишут </b><i>"
         f"<a href=tg://user?id=318865588>\u2060</a>"
         f"<a href=tg://user?id=293490416>♿️</a>"
         f"<a href=https://t.me/acnxua>asphuy</a>"
         f"<a href=https://t.me/artemjj2>♿️</a></i>\n\n"
         + (
-            f"<b>Branch: <a href={remote_url}/tree/{gitrepo.active_branch}>{gitrepo.active_branch}</a>\n"
+            f"<b>Ветка: <a href={remote_url}/tree/{gitrepo.active_branch}>{gitrepo.active_branch}</a>\n"
             if gitrepo.active_branch != "master"
             else ""
         )
-        + f"Commit: <a href={remote_url}/commit/{gitrepo.head.commit.hexsha}>"
+        + f"Коммит: <a href={remote_url}/commit/{gitrepo.head.commit.hexsha}>"
         f"{gitrepo.head.commit.hexsha[:7]}</a> by {gitrepo.head.commit.author.name}\n"
-        f"Commit time: {commit_time}</b>",
+        f"Время коммита: {commit_time}</b>",
     )
 
 
 modules_help["support"] = {
-    "support": "Information about userbot",
-    "version": "Check userbot version",
+    "support": "Информация о юзерботе",
+    "version": "Проверить версию юзербота",
 }

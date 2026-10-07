@@ -1,19 +1,3 @@
-#  Dragon-Userbot - telegram userbot
-#  Copyright (C) 2020-present Dragon Userbot Organization
-#
-#  This program is free software: you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation, either version 3 of the License, or
-#  (at your option) any later version.
-
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-
-#  You should have received a copy of the GNU General Public License
-#  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
 import os
 
 import requests
@@ -25,9 +9,14 @@ from utils.misc import modules_help, prefix
 from utils.scripts import (
     format_exc,
     format_module_help,
+    handle_errors,
     load_module,
     restart,
     unload_module,
+)
+from utils.constants import (
+    CUSTOM_MODULES_RAW_URL,
+    CUSTOM_MODULES_API_URL,
 )
 
 BASE_PATH = os.path.abspath(os.getcwd())
@@ -36,17 +25,17 @@ BASE_PATH = os.path.abspath(os.getcwd())
 @Client.on_message(filters.command(["loadmod", "lm"], prefix) & filters.me)
 async def loadmod(client: Client, message: Message):
     if len(message.command) == 1:
-        await message.edit("<b>Specify module to download</b>")
+        await message.edit("<b>Укажите модуль для загрузки</b>")
         return
 
     module_name = message.command[1].lower()
     resp = requests.get(
-        "https://raw.githubusercontent.com/Dragon-Userbot"
-        f"/custom_modules/{modules_repo_branch}/{module_name}.py"
+        CUSTOM_MODULES_RAW_URL
+        + f"/custom_modules/{modules_repo_branch}/{module_name}.py"
     )
     if not resp.ok:
         await message.edit(
-            f"<b>Module <code>{module_name}</code> is not found</b>"
+            f"<b>Модуль <code>{module_name}</code> не найден</b>"
         )
         return
 
@@ -63,47 +52,44 @@ async def loadmod(client: Client, message: Message):
         return await message.edit(format_exc(e))
 
     await message.edit(
-        f"<b>The module <code>{module_name}</code> is loaded!</b>\n\n"
+        f"<b>Модуль <code>{module_name}</code> загружен!</b>\n\n"
         f"{format_module_help(module_name, False)}"
     )
 
 
 @Client.on_message(filters.command(["unloadmod", "ulm"], prefix) & filters.me)
+@handle_errors
 async def unload_mods(client: Client, message: Message):
     if len(message.command) <= 1:
-        return await message.edit("<b>Specify module to unload</b>")
+        return await message.edit("<b>Укажите модуль для выгрузки</b>")
 
     module_name = message.command[1].lower()
 
     if os.path.exists(f"{BASE_PATH}/modules/custom_modules/{module_name}.py"):
-        try:
-            await unload_module(module_name, client)
-        except Exception as e:
-            return await message.edit(format_exc(e))
-
+        await unload_module(module_name, client)
         os.remove(f"{BASE_PATH}/modules/custom_modules/{module_name}.py")
         await message.edit(
-            f"<b>The module <code>{module_name}</code> removed!</b>"
+            f"<b>Модуль <code>{module_name}</code> удалён!</b>"
         )
     elif os.path.exists(f"{BASE_PATH}/modules/{module_name}.py"):
         await message.edit(
-            "<b>It is forbidden to remove built-in modules, it will disrupt the updater</b>"
+            "<b>Запрещено удалять встроенные модули, это сломает обновления</b>"
         )
     else:
         await message.edit(
-            f"<b>Module <code>{module_name}</code> is not found</b>"
+            f"<b>Модуль <code>{module_name}</code> не найден</b>"
         )
 
 
 @Client.on_message(filters.command(["loadallmods"], prefix) & filters.me)
 async def load_all_mods(client: Client, message: Message):
-    await message.edit("<b>Fetching info...</b>")
+    await message.edit("<b>Получение информации...</b>")
 
     if not os.path.exists(f"{BASE_PATH}/modules/custom_modules"):
         os.mkdir(f"{BASE_PATH}/modules/custom_modules")
 
     modules_list = requests.get(
-        "https://api.github.com/repos/Dragon-Userbot/custom_modules/contents/",
+        CUSTOM_MODULES_API_URL,
         params={"ref": modules_repo_branch},
     ).json()
 
@@ -117,10 +103,10 @@ async def load_all_mods(client: Client, message: Message):
             continue
         new_modules[module_info["name"][:-3]] = module_info["download_url"]
     if not new_modules:
-        return await message.edit("<b>All modules already loaded</b>")
+        return await message.edit("<b>Все модули уже загружены</b>")
 
     await message.edit(
-        f"<b>Loading new modules (it may take a lot of time): "
+        f"<b>Загрузка новых модулей (может занять много времени): "
         f'{" ".join(new_modules.keys())}</b>'
     )
 
@@ -131,13 +117,13 @@ async def load_all_mods(client: Client, message: Message):
         await load_module(module_name, client)
 
     await message.edit(
-        f'<b>Successfully loaded new modules: {" ".join(new_modules.keys())}</b>'
+        f'<b>Успешно загружены новые модули: {" ".join(new_modules.keys())}</b>'
     )
 
 
 @Client.on_message(filters.command(["updateallmods"], prefix) & filters.me)
 async def updateallmods(_, message: Message):
-    await message.edit("<b>Updating modules...</b>")
+    await message.edit("<b>Обновление модулей...</b>")
 
     if not os.path.exists(f"{BASE_PATH}/modules/custom_modules"):
         os.mkdir(f"{BASE_PATH}/modules/custom_modules")
@@ -145,15 +131,15 @@ async def updateallmods(_, message: Message):
     modules_installed = list(os.walk("modules/custom_modules"))[0][2]
 
     if not modules_installed:
-        return await message.edit("<b>You don't have any modules installed</b>")
+        return await message.edit("<b>У вас не установлено ни одного модуля</b>")
 
     for module_name in modules_installed:
         if not module_name.endswith(".py"):
             continue
 
         resp = requests.get(
-            "https://raw.githubusercontent.com/Dragon-Userbot/"
-            f"custom_modules/{modules_repo_branch}/{module_name}"
+            CUSTOM_MODULES_RAW_URL
+            + f"/custom_modules/{modules_repo_branch}/{module_name}"
         )
         if not resp.ok:
             modules_installed.remove(module_name)
@@ -162,11 +148,8 @@ async def updateallmods(_, message: Message):
         with open(f"./modules/custom_modules/{module_name}", "wb") as f:
             f.write(resp.content)
 
-        # Unloading and loading modules manually will take a lot of time
-        # Restart will do this work faster
-
     await message.edit(
-        f"<b>Successfully updated {len(modules_installed)} modules</b>"
+        f"<b>Успешно обновлено модулей: {len(modules_installed)}</b>"
     )
 
     restart()
@@ -174,10 +157,10 @@ async def updateallmods(_, message: Message):
 
 modules_help["loader"] = {
     "loadmod [module_name]*": (
-        "Download module.\n"
-        "Only modules from the official custom_modules repository are supported"
+        "Скачать модуль.\n"
+        "Поддерживаются только модули из официального репозитория custom_modules"
     ),
-    "unloadmod [module_name]*": "Delete module",
-    "loadallmods": "Load all custom modules (use it at your own risk)",
-    "updateallmods": "Update all loaded custom modules",
+    "unloadmod [module_name]*": "Удалить модуль",
+    "loadallmods": "Загрузить все пользовательские модули (на свой страх и риск)",
+    "updateallmods": "Обновить все загруженные пользовательские модули",
 }

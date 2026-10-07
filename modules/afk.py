@@ -1,5 +1,5 @@
-#  Dragon-Userbot - telegram userbot
-#  Copyright (C) 2020-present Dragon Userbot Organization
+#  Nexus-Userbot - telegram userbot
+#  Copyright (C) 2020-present Nexus Userbot Organization
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@ from pyrogram import Client, filters, types
 from utils.db import db
 from utils.misc import modules_help, prefix
 
-# avoid using global variables
+# избегайте использования глобальных переменных
 afk_info = db.get(
     "core.afk",
     "afk_info",
@@ -49,7 +49,7 @@ async def afk_handler(_, message: types.Message):
     end = datetime.datetime.now().replace(microsecond=0)
     afk_time = end - start
     await message.reply(
-        f"<b>I'm AFK {afk_time}\nReason:</b> <i>{afk_info['reason']}</i>"
+        f"<b>Я в AFK {afk_time}\nПричина:</b> <i>{afk_info['reason']}</i>"
     )
 
 
@@ -58,13 +58,13 @@ async def afk(_, message):
     if len(message.text.split()) >= 2:
         reason = message.text.split(" ", maxsplit=1)[1]
     else:
-        reason = "None"
+        reason = "Не указана"
 
     afk_info["start"] = int(datetime.datetime.now().timestamp())
     afk_info["is_afk"] = True
     afk_info["reason"] = reason
 
-    await message.edit(f"<b>I'm going AFK.\n" f"Reason:</b> <i>{reason}</i>")
+    await message.edit(f"<b>Ухожу в AFK.\n" f"Причина:</b> <i>{reason}</i>")
 
     db.set("core.afk", "afk_info", afk_info)
 
@@ -76,13 +76,13 @@ async def unafk(_, message):
         end = datetime.datetime.now().replace(microsecond=0)
         afk_time = end - start
         await message.edit(
-            f"<b>I'm not AFK anymore.\n" f"I was afk {afk_time}</b>"
+            f"<b>Я больше не в AFK.\n" f"Был в AFK {afk_time}</b>"
         )
         afk_info["is_afk"] = False
     else:
-        await message.edit("<b>You weren't afk</b>")
+        await message.edit("<b>Вы не были в AFK</b>")
 
     db.set("core.afk", "afk_info", afk_info)
 
 
-modules_help["afk"] = {"afk [reason]": "Go to afk", "unafk": "Get out of AFK"}
+modules_help["afk"] = {"afk [reason]": "Войти в AFK", "unafk": "Выйти из AFK"}

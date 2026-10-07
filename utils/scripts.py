@@ -1,5 +1,5 @@
-#  Dragon-Userbot - telegram userbot
-#  Copyright (C) 2020-present Dragon Userbot Organization
+#  Nexus-Userbot - telegram userbot
+#  Copyright (C) 2020-present Nexus Userbot Organization
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@ from typing import Dict
 
 from PIL import Image
 from pyrogram import Client, errors, types
+from pyrogram.errors import ChatAdminRequired, UserAdminInvalid
 
 from .misc import modules_help, prefix, requirements_list
 
@@ -35,7 +36,7 @@ interact_with_to_delete = []
 
 
 def text(message: types.Message) -> str:
-    """Find text in `types.Message` object"""
+    """Находит текст в объекте `types.Message`."""
     return message.text if message.text else message.caption
 
 
@@ -50,11 +51,11 @@ def format_exc(e: Exception, suffix="") -> str:
     traceback.print_exc()
     if isinstance(e, errors.RPCError):
         return (
-            f"<b>Telegram API error!</b>\n"
+            f"<b>Ошибка Telegram API!</b>\n"
             f"<code>[{e.CODE} {e.ID or e.NAME}] — {e.MESSAGE.format(value=e.value)}</code>\n\n<b>{suffix}</b>"
         )
     return (
-        f"<b>Error!</b>\n"
+        f"<b>Ошибка!</b>\n"
         f"<code>{e.__class__.__name__}: {e}</code>\n\n<b>{suffix}</b>"
     )
 
@@ -62,22 +63,53 @@ def format_exc(e: Exception, suffix="") -> str:
 def with_reply(func):
     async def wrapped(client: Client, message: types.Message):
         if not message.reply_to_message:
-            await message.edit("<b>Reply to message is required</b>")
+            await message.edit("<b>Требуется ответ на сообщение</b>")
         else:
             return await func(client, message)
 
     return wrapped
 
 
+def handle_errors(func):
+    async def wrapped(client: Client, message: types.Message, *args, **kwargs):
+        try:
+            return await func(client, message, *args, **kwargs)
+        except Exception as e:
+            await message.edit(format_exc(e))
+    return wrapped
+
+
+def handle_admin_errors(func):
+    """Ловит ошибки, связанные с правами администратора, с понятными сообщениями."""
+    async def wrapped(client: Client, message: types.Message, *args, **kwargs):
+        try:
+            return await func(client, message, *args, **kwargs)
+        except (UserAdminInvalid, ChatAdminRequired):
+            await message.edit("<b>Нет прав</b>")
+        except Exception as e:
+            await message.edit(format_exc(e))
+    return wrapped
+
+
+def is_group_chat(message: types.Message) -> bool:
+    return message.chat.type not in ["private", "channel"]
+
+
+def admin_cause(message: types.Message, idx: int = 1) -> str:
+    """Извлекает текст причины из команды, пропуская имя команды и аргумент пользователя."""
+    cause = text(message).split()
+    return " ".join(cause[idx:]) if len(cause) > idx else ""
+
+
 async def interact_with(message: types.Message) -> types.Message:
     """
-    Check history with bot and return bot's response
+    Проверяет историю переписки с ботом и возвращает ответ бота.
 
-    Example:
+    Пример:
     .. code-block:: python
         bot_msg = await interact_with(await bot.send_message("@BotFather", "/start"))
-    :param message: already sent message to bot
-    :return: bot's response
+    :param message: уже отправленное боту сообщение
+    :return: ответ бота
     """
 
     await asyncio.sleep(1)
@@ -93,7 +125,7 @@ async def interact_with(message: types.Message) -> types.Message:
     while response[0].from_user.is_self:
         seconds_waiting += 1
         if seconds_waiting >= 5:
-            raise RuntimeError("bot didn't answer in 5 seconds")
+            raise RuntimeError("Бот не ответил за 5 секунд")
 
         await asyncio.sleep(1)
         # noinspection PyProtectedMember
@@ -114,9 +146,9 @@ def format_module_help(module_name: str, full=True):
     commands = modules_help[module_name]
 
     help_text = (
-        f"<b>Help for |{module_name}|\n\nUsage:</b>\n"
+        f"<b>Справка по модулю |{module_name}|\n\nИспользование:</b>\n"
         if full
-        else "<b>Usage:</b>\n"
+        else "<b>Использование:</b>\n"
     )
 
     for command, desc in commands.items():
@@ -131,16 +163,16 @@ def format_small_module_help(module_name: str, full=True):
     commands = modules_help[module_name]
 
     help_text = (
-        f"<b>Help for |{module_name}|\n\nCommands list:\n"
+        f"<b>Справка по модулю |{module_name}|\n\nСписок команд:\n"
         if full
-        else "<b>Commands list:\n"
+        else "<b>Список команд:\n"
     )
     for command, desc in commands.items():
         cmd = command.split(maxsplit=1)
         args = " <code>" + cmd[1] + "</code>" if len(cmd) > 1 else ""
         help_text += f"<code>{prefix}{cmd[0]}</code>{args}\n"
     help_text += (
-        f"\nGet full usage: <code>{prefix}help {module_name}</code></b>"
+        f"\nПолное использование: <code>{prefix}help {module_name}</code></b>"
     )
 
     return help_text
@@ -148,10 +180,10 @@ def format_small_module_help(module_name: str, full=True):
 
 def import_library(library_name: str, package_name: str = None):
     """
-    Loads a library, or installs it in ImportError case
-    :param library_name: library name (import example...)
-    :param package_name: package name in PyPi (pip install example)
-    :return: loaded module
+    Загружает библиотеку, или устанавливает её при случае ImportError
+    :param library_name: имя библиотеки (пример импорта...)
+    :param package_name: название пакета в PyPi (pip install пример)
+    :return: загруженный модуль
     """
     if package_name is None:
         package_name = library_name
@@ -165,7 +197,7 @@ def import_library(library_name: str, package_name: str = None):
         )
         if completed.returncode != 0:
             raise AssertionError(
-                f"Failed to install library {package_name} (pip exited with code {completed.returncode})"
+                f"Не удалось установить библиотеку {package_name} (pip вернул код {completed.returncode})"
             )
         return importlib.import_module(library_name)
 
@@ -178,8 +210,9 @@ def resize_image(
         output.name = f"sticker.{img_type.lower()}"
 
     with Image.open(input_img) as img:
-        # We used to use thumbnail(size) here, but it returns with a *max* dimension of 512,512
-        # rather than making one side exactly 512, so we have to calculate dimensions manually :(
+        # Раньше здесь использовался thumbnail(size), но он возвращает
+        # размер *максимум* 512х512, вместо того чтобы делать одну сторону
+        # ровно 512, поэтому размеры приходится вычислять вручную :(
         if size2 is not None:
             size = (size, size2)
         elif img.width == img.height:
@@ -216,7 +249,7 @@ async def load_module(
         module = importlib.import_module(path)
     except ImportError as e:
         if core:
-            # Core modules shouldn't raise ImportError
+            # Ядро не должно поднимать ImportError
             raise
 
         if not packages:
@@ -224,7 +257,7 @@ async def load_module(
 
         if message:
             await message.edit(
-                f"<b>Installing requirements: {' '.join(packages)}</b>"
+                f"<b>Установка зависимостей: {' '.join(packages)}</b>"
             )
 
         proc = await asyncio.create_subprocess_exec(
@@ -240,17 +273,17 @@ async def load_module(
         except asyncio.TimeoutError:
             if message:
                 await message.edit(
-                    "<b>Timeout while installed requirements. Try to install them manually</b>"
+                    "<b>Таймаут при установке зависимостей. Установите их вручную</b>"
                 )
-            raise TimeoutError("timeout while installing requirements") from e
+            raise TimeoutError("таймаут при установке зависимостей") from e
 
         if proc.returncode != 0:
             if message:
                 await message.edit(
-                    f"<b>Failed to install requirements (pip exited with code {proc.returncode}). "
-                    f"Check logs for futher info</b>"
+                    f"<b>Не удалось установить зависимости (pip вернул код {proc.returncode}). "
+                    f"Проверьте логи для получения дополнительной информации</b>"
                 )
-            raise RuntimeError("failed to install requirements") from e
+            raise RuntimeError("не удалось установить зависимости") from e
 
         module = importlib.import_module(path)
 

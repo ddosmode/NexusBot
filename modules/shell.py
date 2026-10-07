@@ -1,5 +1,5 @@
-#  Dragon-Userbot - telegram userbot
-#  Copyright (C) 2020-present Dragon Userbot Organization
+#  Nexus-Userbot - telegram userbot
+#  Copyright (C) 2020-present Nexus Userbot Organization
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -26,8 +26,17 @@ from utils.misc import modules_help, prefix
 
 @Client.on_message(filters.command(["shell", "sh"], prefix) & filters.me)
 async def shell(_, message: Message):
+    """Выполняет команду в оболочке.
+
+    Args:
+        _: Клиент (не используется).
+        message: Сообщение, вызвавшее команду.
+
+    Returns:
+        None: Результат выполнения выводится через редактирование сообщения.
+    """
     if len(message.command) < 2:
-        return await message.edit("<b>Specify the command in message text</b>")
+        return await message.edit("<b>Укажите команду в тексте сообщения</b>")
     cmd_text = message.text.split(maxsplit=1)[1]
     cmd_obj = Popen(
         cmd_text,
@@ -40,21 +49,21 @@ async def shell(_, message: Message):
     char = "#" if os.getuid() == 0 else "$"
     text = f"<b>{char}</b> <code>{cmd_text}</code>\n\n"
 
-    await message.edit(text + "<b>Running...</b>")
+    await message.edit(text + "<b>Выполняю...</b>")
     try:
         start_time = perf_counter()
         stdout, stderr = cmd_obj.communicate(timeout=60)
     except TimeoutExpired:
-        text += "<b>Timeout expired (60 seconds)</b>"
+        text += "<b>Превышено время ожидания (60 секунд)</b>"
     else:
         stop_time = perf_counter()
         if stdout:
-            text += f"<b>Output:</b>\n<code>{stdout}</code>\n\n"
+            text += f"<b>Вывод:</b>\n<code>{stdout}</code>\n\n"
         if stderr:
-            text += f"<b>Error:</b>\n<code>{stderr}</code>\n\n"
-        text += f"<b>Completed in {round(stop_time - start_time, 5)} seconds with code {cmd_obj.returncode}</b>"
+            text += f"<b>Ошибка:</b>\n<code>{stderr}</code>\n\n"
+        text += f"<b>Завершено за {round(stop_time - start_time, 5)}с. с кодом {cmd_obj.returncode}</b>"
     await message.edit(text)
     cmd_obj.kill()
 
 
-modules_help["shell"] = {"sh [command]*": "Execute command in shell"}
+modules_help["shell"] = {"sh [command]*": "Выполнить команду в оболочке"}

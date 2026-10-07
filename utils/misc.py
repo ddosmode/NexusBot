@@ -1,5 +1,5 @@
-#  Dragon-Userbot - telegram userbot
-#  Copyright (C) 2020-present Dragon Userbot Organization
+#  Nexus-Userbot - telegram userbot
+#  Copyright (C) 2020-present Nexus Userbot Organization
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@ from sys import version_info
 import git
 
 from .db import db
+from .constants import GITHUB_REPO
 
 __all__ = [
     "modules_help",
@@ -41,9 +42,7 @@ try:
     gitrepo = git.Repo(".")
 except git.exc.InvalidGitRepositoryError:
     repo = git.Repo.init()
-    origin = repo.create_remote(
-        "origin", "https://github.com/Dragon-Userbot/Dragon-Userbot"
-    )
+    origin = repo.create_remote("origin", GITHUB_REPO)
     origin.fetch()
     repo.create_head("master", origin.refs.master)
     repo.heads.master.set_tracking_branch(origin.refs.master)

@@ -1,5 +1,5 @@
-#  Dragon-Userbot - telegram userbot
-#  Copyright (C) 2020-present Dragon Userbot Organization
+#  Nexus-Userbot - telegram userbot
+#  Copyright (C) 2020-present Nexus Userbot Organization
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@ from pyrogram.errors.exceptions.flood_420 import FloodWait
 from pyrogram.types.object import Object
 
 from utils.misc import modules_help, prefix
-from utils.scripts import format_exc
+from utils.scripts import handle_errors
 
 
 class Chat(Object):
@@ -297,104 +297,101 @@ async def get_dialogs(
                 return
 
 
+
 @Client.on_message(filters.command("admlist", prefix) & filters.me)
+@handle_errors
 async def admlist(client: Client, message: types.Message):
     await message.edit(
-        "<b>Retrieving information... (it'll take some time)</b>"
+        "<b>Получение информации... (это займёт некоторое время)</b>"
     )
 
     start = perf_counter()
-    try:
-        adminned_chats = []
-        owned_chats = []
-        owned_usernamed_chats = []
-        async for dialog in get_dialogs(client):
-            chat = dialog.chat
-            if getattr(chat, "deactivated", False):
-                continue
-            if getattr(chat, "is_creator", False) and getattr(
-                chat, "username", None
-            ):
-                owned_usernamed_chats.append(chat)
-            elif getattr(chat, "is_creator", False):
-                owned_chats.append(chat)
-            elif getattr(chat, "is_admin", False):
-                adminned_chats.append(chat)
 
-        text = "<b>Adminned chats:</b>\n"
-        for index, chat in enumerate(adminned_chats):
-            cid = str(chat.id).replace("-100", "")
-            text += f"{index + 1}. <a href=https://t.me/c/{cid}/1>{chat.title}</a>\n"
+    adminned_chats = []
+    owned_chats = []
+    owned_usernamed_chats = []
+    async for dialog in get_dialogs(client):
+        chat = dialog.chat
+        if getattr(chat, "deactivated", False):
+            continue
+        if getattr(chat, "is_creator", False) and getattr(
+            chat, "username", None
+        ):
+            owned_usernamed_chats.append(chat)
+        elif getattr(chat, "is_creator", False):
+            owned_chats.append(chat)
+        elif getattr(chat, "is_admin", False):
+            adminned_chats.append(chat)
 
-        text += "\n<b>Owned chats:</b>\n"
-        for index, chat in enumerate(owned_chats):
-            cid = str(chat.id).replace("-100", "")
-            text += f"{index + 1}. <a href=https://t.me/c/{cid}/1>{chat.title}</a>\n"
+    text = "<b>Чаты, где вы админ:</b>\n"
+    for index, chat in enumerate(adminned_chats):
+        cid = str(chat.id).replace("-100", "")
+        text += f"{index + 1}. <a href=https://t.me/c/{cid}/1>{chat.title}</a>\n"
 
-        text += "\n<b>Owned chats with username:</b>\n"
-        for index, chat in enumerate(owned_usernamed_chats):
-            cid = str(chat.id).replace("-100", "")
-            text += (
-                f"{index + 1}. <a href=https://t.me/{cid}>{chat.title}</a>\n"
-            )
+    text += "\n<b>Ваши чаты:</b>\n"
+    for index, chat in enumerate(owned_chats):
+        cid = str(chat.id).replace("-100", "")
+        text += f"{index + 1}. <a href=https://t.me/c/{cid}/1>{chat.title}</a>\n"
 
-        stop = perf_counter()
-        total_count = (
-            len(adminned_chats) + len(owned_chats) + len(owned_usernamed_chats)
+    text += "\n<b>Ваши чаты с username:</b>\n"
+    for index, chat in enumerate(owned_usernamed_chats):
+        cid = str(chat.id).replace("-100", "")
+        text += (
+            f"{index + 1}. <a href=https://t.me/{cid}>{chat.title}</a>\n"
         )
-        await message.edit(
-            text + "\n"
-            f"<b><u>Total:</u></b> {total_count}"
-            f"\n<b><u>Adminned chats:</u></b> {len(adminned_chats)}\n"
-            f"<b><u>Owned chats:</u></b> {len(owned_chats)}\n"
-            f"<b><u>Owned chats with username:</u></b> {len(owned_usernamed_chats)}\n\n"
-            f"Done at {round(stop - start, 3)} seconds."
-        )
-    except Exception as e:
-        await message.edit(format_exc(e))
-        return
+
+    stop = perf_counter()
+    total_count = (
+        len(adminned_chats) + len(owned_chats) + len(owned_usernamed_chats)
+    )
+    await message.edit(
+        text + "\n"
+        f"<b><u>Всего:</u></b> {total_count}"
+        f"\n<b><u>Чаты где админ:</u></b> {len(adminned_chats)}\n"
+        f"<b><u>Ваши чаты:</u></b> {len(owned_chats)}\n"
+        f"<b><u>Ваши чаты с username:</u></b> {len(owned_usernamed_chats)}\n\n"
+        f"Готово за {round(stop - start, 3)}с."
+    )
 
 
 @Client.on_message(filters.command("admcount", prefix) & filters.me)
+@handle_errors
 async def admcount(client: Client, message: types.Message):
     await message.edit(
-        "<b>Retrieving information... (it'll take some time)</b>"
+        "<b>Получение информации... (это займёт некоторое время)</b>"
     )
 
     start = perf_counter()
-    try:
-        adminned_chats = 0
-        owned_chats = 0
-        owned_usernamed_chats = 0
-        async for dialog in get_dialogs(client):
-            chat = dialog.chat
-            if getattr(chat, "deactivated", False):
-                continue
-            if getattr(chat, "is_creator", False) and getattr(
-                chat, "username", None
-            ):
-                owned_usernamed_chats += 1
-            elif getattr(chat, "is_creator", False):
-                owned_chats += 1
-            elif getattr(chat, "is_admin", False):
-                adminned_chats += 1
 
-        stop = perf_counter()
-        total_count = adminned_chats + owned_chats + owned_usernamed_chats
-        await message.edit(
-            f"<b><u>Total:</u></b> {adminned_chats + owned_chats + owned_usernamed_chats}"
-            f"\n<b><u>Adminned chats:</u></b> {adminned_chats}\n"
-            f"<b><u>Owned chats:</u></b> {owned_chats}\n"
-            f"<b><u>Owned chats with username:</u></b> {owned_usernamed_chats}\n\n"
-            f"Done at {round(stop - start, 3)} seconds.\n\n"
-            f"<b>Get full list: </b><code>{prefix}admlist</code>"
-        )
-    except Exception as e:
-        await message.edit(format_exc(e))
-        return
+    adminned_chats = 0
+    owned_chats = 0
+    owned_usernamed_chats = 0
+    async for dialog in get_dialogs(client):
+        chat = dialog.chat
+        if getattr(chat, "deactivated", False):
+            continue
+        if getattr(chat, "is_creator", False) and getattr(
+            chat, "username", None
+        ):
+            owned_usernamed_chats += 1
+        elif getattr(chat, "is_creator", False):
+            owned_chats += 1
+        elif getattr(chat, "is_admin", False):
+            adminned_chats += 1
+
+    stop = perf_counter()
+    total_count = adminned_chats + owned_chats + owned_usernamed_chats
+    await message.edit(
+        f"<b><u>Всего:</u></b> {adminned_chats + owned_chats + owned_usernamed_chats}"
+        f"\n<b><u>Чаты где админ:</u></b> {adminned_chats}\n"
+        f"<b><u>Ваши чаты:</u></b> {owned_chats}\n"
+        f"<b><u>Ваши чаты с username:</u></b> {owned_usernamed_chats}\n\n"
+        f"Готово за {round(stop - start, 3)}с.\n\n"
+        f"<b>Получить полный список: </b><code>{prefix}admlist</code>"
+    )
 
 
 modules_help["admlist"] = {
-    "admcount": "Get count of adminned and owned chats",
-    "admlist": "Get list of adminned and owned chats",
+    "admcount": "Получить количество чатов, где вы админ, и ваших чатов",
+    "admlist": "Получить список чатов, где вы админ, и ваших чатов",
 }

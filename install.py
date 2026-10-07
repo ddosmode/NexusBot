@@ -1,5 +1,5 @@
-#  Dragon-Userbot - telegram userbot
-#  Copyright (C) 2020-present Dragon Userbot Organization
+#  Nexus-Userbot - telegram userbot
+#  Copyright (C) 2020-present Nexus Userbot Organization
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -20,6 +20,11 @@ import sys
 from pyrogram import Client, errors
 
 from utils import config
+from utils.constants import (
+    CHANNEL,
+    CHAT,
+    MODULES_CHANNEL,
+)
 
 if __name__ == "__main__":
     app = Client(
@@ -38,28 +43,28 @@ if __name__ == "__main__":
             db.server_info()
         except errors.ConnectionFailure as e:
             raise RuntimeError(
-                "MongoDB server isn't available! "
-                f"Provided url: {config.db_url}. "
-                "Enter valid URL and restart installation"
+                "Сервер MongoDB недоступен! "
+                f"Указан URL: {config.db_url}. "
+                "Введите действительный URL и перезапустите установку"
             ) from e
 
     install_type = sys.argv[1] if len(sys.argv) > 1 else "3"
     if install_type == "1":
-        restart = "pm2 restart dragon"
+        restart = "pm2 restart nexus"
     elif install_type == "2":
-        restart = "sudo systemctl restart dragon"
+        restart = "sudo systemctl restart nexus"
     else:
-        restart = "cd Dragon-Userbot/ && python main.py"
+        restart = "cd NexusBot/ && python main.py"
 
     app.start()
     try:
         app.send_message(
             "me",
-            f"<b>[{datetime.datetime.now()}] Dragon-Userbot launched! \n"
-            "Channel: @Dragon_Userb0t\n"
-            "Custom modules: @Dragon_Userb0t_modules\n"
-            "Chat [RU]: @Dragon_Userb0t_chat\n"
-            f"For restart, enter:</b>\n"
+            f"<b>[{datetime.datetime.now()}] NexusBot запущен! \n"
+            f"Канал: {CHANNEL}\n"
+            f"Пользовательские модули: {MODULES_CHANNEL}\n"
+            f"Чат [RU]: {CHAT}\n"
+            f"Для перезапуска введите:</b>\n"
             f"<code>{restart}</code>",
         )
     except errors.RPCError:

@@ -1,5 +1,5 @@
-#  Dragon-Userbot - telegram userbot
-#  Copyright (C) 2020-present Dragon Userbot Organization
+#  Nexus-Userbot - telegram userbot
+#  Copyright (C) 2020-present Nexus Userbot Organization
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -26,6 +26,15 @@ from utils.misc import modules_help, prefix
     filters.command(["spam", "statspam", "slowspam"], prefix) & filters.me
 )
 async def spam(client: Client, message: Message):
+    """Запускает спам с задержкой.
+
+    Args:
+        client: Клиент Pyrogram.
+        message: Сообщение, вызвавшее команду.
+
+    Returns:
+        None: Сообщения отправляются и/или удаляются в зависимости от типа.
+    """
     amount = int(message.command[1])
     text = " ".join(message.command[2:])
     spam_type = message.command[0]
@@ -49,6 +58,15 @@ async def spam(client: Client, message: Message):
 
 @Client.on_message(filters.command("fastspam", prefix) & filters.me)
 async def fastspam(client: Client, message: Message):
+    """Запускает быстрый спам без задержек.
+
+    Args:
+        client: Клиент Pyrogram.
+        message: Сообщение, вызвавшее команду.
+
+    Returns:
+        None: Сообщения отправляются параллельно.
+    """
     amount = int(message.command[1])
     text = " ".join(message.command[2:])
 
@@ -64,8 +82,8 @@ async def fastspam(client: Client, message: Message):
 
 
 modules_help["spam"] = {
-    "spam [amount] [text]": "Start spam",
-    "statspam [amount] [text]": "Send and delete",
-    "fastspam [amount] [text]": "Start fast spam",
-    "slowspam [amount] [text]": "Start slow spam",
+    "spam [amount] [text]": "Запустить спам",
+    "statspam [amount] [text]": "Отправлять и удалять",
+    "fastspam [amount] [text]": "Запустить быстрый спам",
+    "slowspam [amount] [text]": "Запустить медленный спам",
 }

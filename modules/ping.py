@@ -1,5 +1,5 @@
-#  Dragon-Userbot - telegram userbot
-#  Copyright (C) 2020-present Dragon Userbot Organization
+#  Nexus-Userbot - telegram userbot
+#  Copyright (C) 2020-present Nexus Userbot Organization
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -24,12 +24,21 @@ from utils.misc import modules_help, prefix
 
 @Client.on_message(filters.command(["ping", "p"], prefix) & filters.me)
 async def ping(_, message: Message):
+    """Проверяет пинг до серверов Telegram.
+
+    Args:
+        _: Клиент (не используется).
+        message: Сообщение, вызвавшее команду.
+
+    Returns:
+        None: Результат выводится через редактирование сообщения.
+    """
     start = perf_counter()
-    await message.edit("<b>Pong!</b>")
+    await message.edit("<b>Понг!</b>")
     end = perf_counter()
-    await message.edit(f"<b>Pong! {round(end - start, 3)}s</b>")
+    await message.edit(f"<b>Понг! {int((end - start) * 1000)}мс</b>")
 
 
 modules_help["ping"] = {
-    "ping": "Check ping to Telegram servers",
+    "ping": "Проверить пинг до серверов Telegram",
 }

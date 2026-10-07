@@ -1,5 +1,5 @@
-#  Dragon-Userbot - telegram userbot
-#  Copyright (C) 2020-present Dragon Userbot Organization
+#  Nexus-Userbot - telegram userbot
+#  Copyright (C) 2020-present Nexus Userbot Organization
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -26,9 +26,9 @@ async def help_cmd(_, message: Message):
     if len(message.command) == 1:
         msg_edited = False
         text = (
-            "<b>Help for <a href=https://t.me/Dragon_Userbot_chat>Dragon-Userbot</a>\n"
-            f"For more help on how to use a command, type <code>{prefix}help [module]</code>\n\n"
-            "Available Modules:\n"
+            "<b>Помощь для <a href=https://t.me/Nexus_Userbot_chat>NexusBot</a>\n"
+            f"Для справки по команде введите <code>{prefix}help [модуль]</code>\n\n"
+            "Доступные модули:\n"
         )
 
         for module_name, module_commands in sorted(
@@ -52,7 +52,7 @@ async def help_cmd(_, message: Message):
                     msg_edited = True
                 text = "<b>"
 
-        text += f"\nThe number of modules in the userbot: {len(modules_help) / 1}</b>"
+        text += f"\nКоличество модулей в юзерботе: {len(modules_help) / 1}</b>"
 
         if msg_edited:
             await message.reply(text, disable_web_page_preview=True)
@@ -61,7 +61,7 @@ async def help_cmd(_, message: Message):
     elif message.command[1].lower() in modules_help:
         await message.edit(format_module_help(message.command[1].lower()))
     else:
-        # No, this cringe won't be refactored
+        # Нет, этот трэш не будет рефакториться
         command_name = message.command[1].lower()
         for name, commands in modules_help.items():
             for command in commands.keys():
@@ -69,15 +69,15 @@ async def help_cmd(_, message: Message):
                     cmd = command.split(maxsplit=1)
                     cmd_desc = commands[command]
                     return await message.edit(
-                        f"<b>Help for command <code>{prefix}{command_name}</code>\n"
-                        f"Module: {name} (<code>{prefix}help {name}</code>)</b>\n\n"
+                        f"<b>Справка по команде <code>{prefix}{command_name}</code>\n"
+                        f"Модуль: {name} (<code>{prefix}help {name}</code>)</b>\n\n"
                         f"<code>{prefix}{cmd[0]}</code>"
                         f"{' <code>' + cmd[1] + '</code>' if len(cmd) > 1 else ''}"
                         f" — <i>{cmd_desc}</i>"
                     )
-        await message.edit(f"<b>Module {command_name} not found</b>")
+        await message.edit(f"<b>Модуль {command_name} не найден</b>")
 
 
 modules_help["help"] = {
-    "help [module/command name]": "Get common/module/command help"
+    "help [module/command name]": "Общая/модульная/командная справка"
 }
