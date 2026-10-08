@@ -1,7 +1,7 @@
-https://github.com/KurimuzonAkuma/pyrogram/archive/dev.zip
+kurigram>=2.2.26
 tgcrypto
 
-pymongo[srv]
+pymongo
 motor
 dnspython
 aiosqlite
